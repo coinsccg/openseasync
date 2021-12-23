@@ -57,4 +57,8 @@ const (
 	//type transfer error 007
 	TYPE_TRANSFER_ERROR_CODE = "500007001"
 	TYPE_TRANSFER_ERROR_MSG  = "type transfer occurred error"
+
+	// ethereum
+	CONTRACT_ADDRESS_ERROR_CODE = "500008001"
+	CONTRACT_ADDRESS_ERROR_MSG  = "Invalid contract address"
 )

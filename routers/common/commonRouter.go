@@ -1,6 +1,7 @@
 package common
 
 import (
+	common2 "github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"openseasync/common"
@@ -41,9 +42,14 @@ func GetOpenSeaOwnerAssets(c *gin.Context) {
 
 func GetOpenSeaSingleAsset(c *gin.Context) {
 	contractAddress := c.Param("contract_address")
+	if !common2.IsHexAddress(contractAddress) {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.CONTRACT_ADDRESS_ERROR_CODE, errorinfo.CONTRACT_ADDRESS_ERROR_MSG))
+		return
+	}
 	tokenId, err := strconv.ParseInt(c.Param("token_id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_TYPE_ERROR_CODE, err.Error()))
+		return
 	}
 	asset, errCode, errMsg := getOpenSeaSingleAsset(contractAddress, tokenId)
 	if errCode != "" {
