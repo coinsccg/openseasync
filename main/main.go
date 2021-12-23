@@ -5,7 +5,6 @@ import (
 	cors "github.com/itsjamie/gin-cors"
 	"openseasync/common/constants"
 	"openseasync/config"
-	"openseasync/database"
 	"openseasync/logs"
 	"openseasync/routers/common"
 	"time"
@@ -13,16 +12,16 @@ import (
 
 func main() {
 	// init database
-	db := database.Init()
-	config.InitConfig("")
-
-
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logs.GetLogger().Error(err)
-		}
-	}()
+	//db := database.Init()
+	//config.InitConfig("")
+	//
+	//
+	//defer func() {
+	//	err := db.Close()
+	//	if err != nil {
+	//		logs.GetLogger().Error(err)
+	//	}
+	//}()
 
 	r := gin.Default()
 	r.Use(cors.Middleware(cors.Config{
@@ -42,5 +41,3 @@ func main() {
 		logs.GetLogger().Fatal(err)
 	}
 }
-
-
