@@ -1,0 +1,10 @@
+port="8888"
+dev = false
+
+[database]
+db_host="localhost"
+db_port="3306"
+db_schema_name="payment_bridge"
+db_username="root"
+db_pwd="123456"
+db_args="charset=utf8mb4&parseTime=True&loc=Local"
