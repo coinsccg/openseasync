@@ -35,9 +35,11 @@ const (
 	TRANSACTION_STATUS_SUCCESS = "success"
 	TRANSACTION_STATUS_FAIL    = "fail"
 
-	URL_HOST_GET_COMMON      = "/common"
-	URL_HOST_GET_HOST_INFO   = "/host/info"
-	URL_SYSTEM_CONFIG_PARAMS = "/system/params"
+	URL_HOST_GET_COMMON       = "/common"
+	URL_HOST_GET_HOST_INFO    = "/host/info"
+	URL_OPENSEA_OWNER_ASSETS  = "/assets"
+	URL_OPENSEA_SINGLE_ASSETS = "/assets/single/:contract_address/:token_id"
+	URL_SYSTEM_CONFIG_PARAMS  = "/system/params"
 
 	TABLE_NAME_EVENT_BSC     = "event_bsc"
 	TABLE_NAME_EVENT_GOERLI  = "event_goerli"
@@ -76,4 +78,10 @@ const (
 	LOTUS_PRICE_MULTIPLE_1E18 = 1e18 // 10^18
 	FILE_BLOCK_NUMBER_MAX     = 999999999999999
 	TIME_HALF_AN_HOUR         = 30 * 60 * 1000
+
+	// dev
+	OPENSEA_ASSETS_URL       = "https://testnets-api.opensea.io/assets"
+	OPENSEA_SINGLE_ASSET_URL = "https://testnets-api.opensea.io/asset"
+
+	// pod
 )

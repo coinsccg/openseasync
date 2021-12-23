@@ -7,9 +7,9 @@ import (
 )
 
 type Configuration struct {
-	Port                 string       `toml:"port"`
-	Database             database     `toml:"database"`
-	Dev                  bool         `toml:"dev"`
+	Port     string   `toml:"port"`
+	Database database `toml:"database"`
+	Dev      bool     `toml:"dev"`
 }
 
 type database struct {
@@ -25,7 +25,7 @@ var config *Configuration
 
 func InitConfig(configFile string) {
 	if strings.Trim(configFile, " ") == "" {
-		configFile = "./config/config.toml"
+		configFile = "../config/config.toml"
 	}
 	if metaData, err := toml.DecodeFile(configFile, &config); err != nil {
 		log.Fatal("error:", err)
@@ -53,7 +53,6 @@ func requiredFieldsAreGiven(metaData toml.MetaData) bool {
 		{"database", "db_username"},
 		{"database", "db_schema_name"},
 		{"database", "db_pwd"},
-
 	}
 
 	for _, v := range requiredFields {
