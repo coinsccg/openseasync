@@ -35,11 +35,14 @@ const (
 	TRANSACTION_STATUS_SUCCESS = "success"
 	TRANSACTION_STATUS_FAIL    = "fail"
 
-	URL_HOST_GET_COMMON       = "/common"
-	URL_HOST_GET_HOST_INFO    = "/host/info"
-	URL_OPENSEA_OWNER_ASSETS  = "/assets"
-	URL_OPENSEA_SINGLE_ASSETS = "/assets/single/:contract_address/:token_id"
-	URL_SYSTEM_CONFIG_PARAMS  = "/system/params"
+	URL_HOST_GET_COMMON           = "/common"
+	URL_HOST_GET_HOST_INFO        = "/host/info"
+	URL_OPENSEA_OWNER_ASSETS      = "/opensea/assets/:owner"
+	URL_OPENSEA_OWNER_Collections = "/opensea/collections/:owner"
+	URL_FIND_ASSETS_OWNER         = "/assets/:owner"
+	URL_FIND_Collections_OWNER    = "/collections/:owner"
+	URL_FIND_ASSETS_SLUG          = "/assets/:owner/:slug"
+	URL_SYSTEM_CONFIG_PARAMS      = "/system/params"
 
 	TABLE_NAME_EVENT_BSC     = "event_bsc"
 	TABLE_NAME_EVENT_GOERLI  = "event_goerli"
@@ -82,6 +85,7 @@ const (
 	// dev
 	OPENSEA_ASSETS_URL       = "https://testnets-api.opensea.io/assets"
 	OPENSEA_SINGLE_ASSET_URL = "https://testnets-api.opensea.io/asset"
+	OPENSEA_COLLECTION_URL   = "https://testnets-api.opensea.io/collections"
 
 	// pod
 )
