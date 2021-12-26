@@ -2,6 +2,8 @@ package utils
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/ethereum/go-ethereum"
@@ -13,9 +15,9 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net/http"
+	"openseasync/logs"
 	"os"
 	"path/filepath"
-	"openseasync/logs"
 	"strconv"
 	"strings"
 	"time"
@@ -193,4 +195,10 @@ func UrlJoin(root string, parts ...string) string {
 
 func GetBoolPointer(b bool) *bool {
 	return &b
+}
+
+func MD5(v string) string {
+	h := md5.New()
+	h.Write([]byte(v))
+	return hex.EncodeToString(h.Sum(nil))
 }

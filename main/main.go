@@ -42,5 +42,3 @@ func main() {
 		logs.GetLogger().Fatal(err)
 	}
 }
-
-

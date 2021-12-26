@@ -22,6 +22,10 @@ const (
 	HTTP_REQUEST_GET_RESPONSE_ERROR_MSG               = "Get http response occurred error"
 	HTTP_REQUEST_PARAM_TYPE_ERROR_CODE                = "500002008"
 	HTTP_REQUEST_PARAM_TYPE_ERROR_MSG                 = "Http request param type is error"
+	HTTP_REQUEST_PARAM_VALUE_ERROR_CODE               = "500002009"
+	HTTP_REQUEST_PARAM_VALUE_ERROR_MSG                = "Request parameter invalid"
+	OPENSEA_HTTP_REQUEST_ERROR_CODE                   = "5000020010"
+	OPENSEA_HTTP_REQUEST_ERROR_MSG                    = "Opensea http request exception"
 
 	//database err 003
 	GET_RECORD_COUNT_ERROR_CODE  = "500003001"
@@ -55,4 +59,8 @@ const (
 	//type transfer error 007
 	TYPE_TRANSFER_ERROR_CODE = "500007001"
 	TYPE_TRANSFER_ERROR_MSG  = "type transfer occurred error"
+
+	// ethereum
+	CONTRACT_ADDRESS_ERROR_CODE = "500008001"
+	CONTRACT_ADDRESS_ERROR_MSG  = "Invalid contract address"
 )
