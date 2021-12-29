@@ -2,14 +2,12 @@ package common
 
 import (
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
 	"openseasync/common"
-	"openseasync/common/constants"
+	"openseasync/common/utils"
 	"openseasync/logs"
 	"openseasync/models"
 	"runtime"
+	"time"
 )
 
 func getSwanMinerHostInfo() *common.HostInfo {
@@ -25,11 +23,18 @@ func getSwanMinerHostInfo() *common.HostInfo {
 func getOpenSeaOwnerAssets(owner string) error {
 	var n int64 = 1
 	for {
-		content, err := requestOpenSeaAssets(owner, 50*(n-1), 50*n)
+		// If the number of requests is too many, a 429 error code will be thrown
+		content, err := utils.RequestOpenSeaAssets(owner, 50*(n-1), 50)
+		if err != nil {
+			return err
+		}
 		var assets models.OwnerAsset
 		if err = json.Unmarshal(content, &assets); err != nil {
 			logs.GetLogger().Error(err)
 			return err
+		}
+		if len(assets.Assets) < 1 {
+			break
 		}
 		if err = models.InsertOpenSeaAsset(&assets, owner); err != nil {
 			return err
@@ -38,6 +43,7 @@ func getOpenSeaOwnerAssets(owner string) error {
 			break
 		}
 		n++
+		time.Sleep(time.Second / time.Duration(2))
 	}
 
 	return nil
@@ -47,7 +53,10 @@ func getOpenSeaOwnerAssets(owner string) error {
 func getOpenSeaOwnerCollection(owner string) error {
 	var n int64 = 1
 	for {
-		content, err := requestOpenSeaCollections(owner, 300*(n-1), 300*n)
+		content, err := utils.RequestOpenSeaCollections(owner, 300*(n-1), 300*n)
+		if err != nil {
+			return err
+		}
 		var collections models.OwnerCollection
 		if err = json.Unmarshal(content, &collections.Collections); err != nil {
 			logs.GetLogger().Error(err)
@@ -69,7 +78,6 @@ func getOpenSeaOwnerCollection(owner string) error {
 func getAssetByOwner(owner string) ([]*models.Asset, error) {
 	assets, err := models.FindAssetByOwner(owner)
 	if err != nil {
-		logs.GetLogger().Error(err)
 		return nil, err
 	}
 	return assets, nil
@@ -79,7 +87,6 @@ func getAssetByOwner(owner string) ([]*models.Asset, error) {
 func getAssetBySlug(owner, slug string) ([]*models.Asset, error) {
 	assets, err := models.FindWorksBySlug(owner, slug)
 	if err != nil {
-		logs.GetLogger().Error(err)
 		return nil, err
 	}
 	return assets, nil
@@ -89,34 +96,7 @@ func getAssetBySlug(owner, slug string) ([]*models.Asset, error) {
 func getCollectionsByOwner(owner string) ([]*models.Collection, error) {
 	collections, err := models.FindCollectionByOwner(owner)
 	if err != nil {
-		logs.GetLogger().Error(err)
 		return nil, err
 	}
 	return collections, nil
-}
-
-func requestOpenSeaAssets(owner string, offset, limit int64) ([]byte, error) {
-	url := fmt.Sprintf("%s?owner=%s&offset=%d&limit=%d", constants.OPENSEA_ASSETS_URL, owner, offset, limit)
-	req, _ := http.NewRequest(http.MethodGet, url, nil)
-	res, err := http.DefaultClient.Do(req)
-	if res.StatusCode != http.StatusOK {
-		logs.GetLogger().Error(err)
-		return nil, err
-	}
-	defer res.Body.Close()
-	content, _ := ioutil.ReadAll(res.Body)
-	return content, nil
-}
-
-func requestOpenSeaCollections(owner string, offset, limit int64) ([]byte, error) {
-	url := fmt.Sprintf("%s?asset_owner=%s&offset=%d&limit=%d", constants.OPENSEA_COLLECTION_URL, owner, offset, limit)
-	req, _ := http.NewRequest(http.MethodGet, url, nil)
-	res, err := http.DefaultClient.Do(req)
-	if res.StatusCode != http.StatusOK {
-		logs.GetLogger().Error(err)
-		return nil, err
-	}
-	defer res.Body.Close()
-	content, _ := ioutil.ReadAll(res.Body)
-	return content, nil
 }

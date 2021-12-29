@@ -1,7 +1,9 @@
 package models
 
 import (
+	"github.com/jinzhu/gorm"
 	"openseasync/database"
+	"openseasync/logs"
 )
 
 type Collection struct {
@@ -12,30 +14,33 @@ type Collection struct {
 	Description    string `json:"description"`      // 集合描述
 	ImageURL       string `json:"image_url"`        // 集合头像
 	LargeImageURL  string `json:"large_image_url"`  // 头像大图
+	CreateDate     string `json:"create_date"`      // 集合创建时间
 }
 
 // InsertOpenSeaCollection find collection through opensea API and insert
-func InsertOpenSeaCollection(collections *OwnerCollection, owner string) error {
+func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 	db := database.GetDB()
 
 	for _, v := range collections.Collections {
 		var collection = Collection{
 			Slug:           v.Slug,
-			Owner:          owner,
+			Owner:          user,
 			Name:           v.Name,
 			Description:    v.Description,
 			BannerImageURL: v.BannerImageURL,
 			ImageURL:       v.ImageURL,
 			LargeImageURL:  v.LargeImageURL,
+			CreateDate:     v.CreatedDate,
 		}
 
 		// gorm v1  batch insert is not supported
 		var tmp Collection
 		rows := db.Table("collections").
-			Where("owner = ? AND slug = ?", owner, v.Slug).
+			Where("owner = ? AND slug = ?", user, v.Slug).
 			Find(&tmp).RowsAffected
 		if rows == 0 {
-			if err := db.Table("collections").Create(&collection).Error; err != nil {
+			if err := db.Table("collections").Create(&collection).Error; err != nil && err != gorm.ErrRecordNotFound {
+				logs.GetLogger().Error(err)
 				return err
 			}
 		}
@@ -49,7 +54,8 @@ func InsertOpenSeaCollection(collections *OwnerCollection, owner string) error {
 func FindCollectionByOwner(owner string) ([]*Collection, error) {
 	var collections []*Collection
 	db := database.GetDB()
-	if err := db.Table("collections").Where("owner = ?", owner).Find(&collections).Error; err != nil {
+	if err := db.Table("collections").Where("owner = ?", owner).Find(&collections).Error; err != nil && err != gorm.ErrRecordNotFound {
+		logs.GetLogger().Error(err)
 		return nil, err
 	}
 	return collections, nil
