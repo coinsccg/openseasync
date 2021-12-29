@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/ethereum/go-ethereum"
@@ -15,6 +16,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net/http"
+	constants2 "openseasync/common/constants"
 	"openseasync/logs"
 	"os"
 	"path/filepath"
@@ -201,4 +203,53 @@ func MD5(v string) string {
 	h := md5.New()
 	h.Write([]byte(v))
 	return hex.EncodeToString(h.Sum(nil))
+}
+
+func RequestOpenSeaAssets(owner string, offset, limit int64) ([]byte, error) {
+	url := fmt.Sprintf("%s?owner=%s&offset=%d&limit=%d", constants2.OPENSEA_ASSETS_URL, owner, offset, limit)
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+	content, _ := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(string(content))
+	}
+	return content, nil
+}
+
+func RequestOpenSeaCollections(owner string, offset, limit int64) ([]byte, error) {
+	url := fmt.Sprintf("%s?asset_owner=%s&offset=%d&limit=%d", constants2.OPENSEA_COLLECTION_URL, owner, offset, limit)
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+	content, _ := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(string(content))
+	}
+	return content, nil
+}
+
+func RequestOpenSeaSingleAsset(contractAddress, tokenId string) ([]byte, error) {
+	url := fmt.Sprintf("%s/%s/%s", constants2.OPENSEA_SINGLE_ASSET_URL, contractAddress, tokenId)
+	fmt.Println(url)
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+	content, _ := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(string(content))
+	}
+	return content, nil
 }

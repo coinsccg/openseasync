@@ -226,6 +226,17 @@ type AutoAsset struct {
 		TraitCount  int         `json:"trait_count"`
 		Order       interface{} `json:"order"`
 	} `json:"traits"`
+	TopOwnerships []struct {
+		Owner struct {
+			User struct {
+				Username string `json:"username"`
+			} `json:"user"`
+			ProfileImgURL string `json:"profile_img_url"`
+			Address       string `json:"address"`
+			Config        string `json:"config"`
+		} `json:"owner"`
+		Quantity string `json:"quantity"`
+	} `json:"top_ownerships"`
 	TopBid                  string `json:"top_bid"`
 	ListingDate             string `json:"listing_date"`
 	IsPresale               bool   `json:"is_presale"`

@@ -25,11 +25,11 @@ func initLogger() {
 	logger.SetReportCaller(true)
 	logger.SetFormatter(formatter)
 	pathMap := lfshook.PathMap{
-		logrus.InfoLevel:  "../logs/info.log",
-		logrus.WarnLevel:  "../logs/warn.log",
-		logrus.ErrorLevel: "../logs/error.log",
-		logrus.FatalLevel: "../logs/error.log",
-		logrus.PanicLevel: "../logs/error.log",
+		logrus.InfoLevel:  "./logs/info.log",
+		logrus.WarnLevel:  "./logs/warn.log",
+		logrus.ErrorLevel: "./logs/error.log",
+		logrus.FatalLevel: "./logs/error.log",
+		logrus.PanicLevel: "./logs/error.log",
 	}
 	logger.Hooks.Add(lfshook.NewHook(
 		pathMap,
