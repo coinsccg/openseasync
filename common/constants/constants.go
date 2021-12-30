@@ -37,12 +37,15 @@ const (
 
 	URL_HOST_GET_COMMON                 = "/common"
 	URL_HOST_GET_HOST_INFO              = "/host/info"
+	URL_OPENSEA_OWNER_ASSETS_SYNC       = "/opensea/sync/:owner"
 	URL_OPENSEA_OWNER_ASSETS            = "/opensea/assets/:owner"
 	URL_OPENSEA_ASSETS_CONTRACT_TOKENID = "/opensea/asset/:contract_address/:token_id"
 	URL_OPENSEA_OWNER_Collections       = "/opensea/collections/:owner"
-	URL_FIND_ASSETS_OWNER               = "/assets/:owner"
-	URL_FIND_Collections_OWNER          = "/collections/:owner"
+	URL_FIND_ASSET                      = "/assets/:owner"
+	URL_FIND_COLLECTION                 = "/collections/:owner"
 	URL_FIND_ASSETS_SLUG                = "/assets/:owner/:slug"
+	URL_DELETE_ASSET                    = "/assets/:contract_address/:token_id"
+	URL_DELETE_COLLECTION               = "/collections/:owner/:slug"
 	URL_SYSTEM_CONFIG_PARAMS            = "/system/params"
 
 	TABLE_NAME_EVENT_BSC     = "event_bsc"
@@ -84,9 +87,15 @@ const (
 	TIME_HALF_AN_HOUR         = 30 * 60 * 1000
 
 	// dev
-	OPENSEA_ASSETS_URL       = "https://testnets-api.opensea.io/assets"
-	OPENSEA_SINGLE_ASSET_URL = "https://testnets-api.opensea.io/asset"
-	OPENSEA_COLLECTION_URL   = "https://testnets-api.opensea.io/collections"
+	OPENSEA_DEV_ASSETS_URL       = "https://testnets-api.opensea.io/assets"
+	OPENSEA_DEV_SINGLE_ASSET_URL = "https://testnets-api.opensea.io/asset"
+	OPENSEA_DEV_COLLECTION_URL   = "https://testnets-api.opensea.io/collections"
 
-	// pod
+	// prod
+	OPENSEA_PROD_ASSETS_URL       = "https://api.opensea.io/api/v1/assets"
+	OPENSEA_PROD_SINGLE_ASSET_URL = "https://api.opensea.io/api/v1/asset"
+	OPENSEA_PROD_COLLECTIONS_URL  = "https://api.opensea.io/api/v1/collections"
+
+	// OPENSEA API KEY
+	OPENSEA_API_KEY = "" // Fill in relevant information and apply for API key https://docs.opensea.io/reference/request-an-api-key
 )

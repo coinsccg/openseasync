@@ -19,8 +19,8 @@ func getSwanMinerHostInfo() *common.HostInfo {
 	return info
 }
 
-// getOpenSeaOwnerAssets get all assets by owner
-func getOpenSeaOwnerAssets(owner string) error {
+// openSeaOwnerAssetsSync get all assets by owner
+func openSeaOwnerAssetsSync(owner string) error {
 	var n int64 = 1
 	for {
 		// If the number of requests is too many, a 429 error code will be thrown
@@ -43,14 +43,14 @@ func getOpenSeaOwnerAssets(owner string) error {
 			break
 		}
 		n++
-		time.Sleep(time.Second / time.Duration(2))
+		time.Sleep(time.Second)
 	}
 
 	return nil
 }
 
-// getOpenSeaOwnerCollection get all collections by owner
-func getOpenSeaOwnerCollection(owner string) error {
+// openSeaOwnerCollectionsSync get all collections by owner
+func openSeaOwnerCollectionsSync(owner string) error {
 	var n int64 = 1
 	for {
 		content, err := utils.RequestOpenSeaCollections(owner, 300*(n-1), 300*n)
@@ -99,4 +99,20 @@ func getCollectionsByOwner(owner string) ([]*models.Collection, error) {
 		return nil, err
 	}
 	return collections, nil
+}
+
+// deleteAssetByTokenID delete asset
+func deleteAssetByTokenID(contractAddress, tokenID string) error {
+	if err := models.DeleteAssetByTokenID(contractAddress, tokenID); err != nil {
+		return err
+	}
+	return nil
+}
+
+// deleteCollectionBySlug delete collection
+func deleteCollectionBySlug(owner, slug string) error {
+	if err := models.DeleteCollectionBySlug(owner, slug); err != nil {
+		return err
+	}
+	return nil
 }

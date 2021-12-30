@@ -30,6 +30,8 @@ type Asset struct {
 	Contract            Contract             `json:"contract"`
 	Collection          Collection           `json:"collection"`
 	AssetsTopOwnerships []AssetsTopOwnership `json:"assets_top_ownership"`
+	Traits              []Trait              `json:"trait"`
+	IsDelete            int8                 `json:"is_delete"` // 是否删除 1删除 0未删除 默认为0
 }
 
 type Contract struct {
@@ -42,12 +44,24 @@ type Contract struct {
 	Description  string `json:"description"`   // 合约描述
 }
 
+type Trait struct {
+	ContractAddress string `json:"_"`          // 合约地址
+	TokenId         string `json:"_"`          // token id
+	TraitType       string `json:"trait_type"` // 特征类型
+	Value           string `json:"value"`      // 特征值
+	DisplayType     string `json:"display_type"`
+	MaxValue        int    `json:"max_value"`
+	TraitCount      int    `json:"trait_count"` // 数量
+	Order           string `json:"order"`
+	IsDelete        int8   `json:"is_delete"` // 是否删除 1删除 0未删除 默认为0
+}
+
 type AssetsTopOwnership struct {
-	ContractAddress string `json:"contract_address"` // 合约地址
-	TokenId         string `json:"token_id"`         // token id
-	Owner           string `json:"owner"`            // 所有者地址
-	ProfileImgURL   string `json:"profile_img_url"`  // 所有者头像
-	Quantity        string `json:"quantity"`         // 数量
+	ContractAddress string `json:"_"`               // 合约地址
+	TokenId         string `json:"_"`               // token id
+	Owner           string `json:"owner"`           // 所有者地址
+	ProfileImgURL   string `json:"profile_img_url"` // 所有者头像
+	Quantity        string `json:"quantity"`        // 数量
 }
 
 // InsertOpenSeaAsset query Aseets through opensea API and insert
@@ -94,10 +108,28 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 			Where("contract_address = ? AND token_id = ?", v.AssetContract.Address, v.TokenID).
 			Find(&tmp1).RowsAffected
 		if rows1 == 0 {
+			// insert
 			if err := db.Table("assets").Create(&asset).Error; err != nil {
 				logs.GetLogger().Error(err)
 				return err
 			}
+		} else {
+			// update NFT without locked metadata
+			if v.TokenMetadata == "" {
+				if err := db.Table("assets").
+					Where("contract_address = ? AND token_id = ?", v.AssetContract.Address, v.TokenID).
+					Updates(map[string]interface{}{
+						"title":               v.Name,
+						"image_url":           v.ImageURL,
+						"image_preview_url":   v.ImagePreviewURL,
+						"image_thumbnail_url": v.ImageThumbnailURL,
+						"description":         v.Description,
+					}).Error; err != nil {
+					logs.GetLogger().Error(err)
+					return err
+				}
+			}
+
 		}
 
 		var tmp2 Contract
@@ -110,6 +142,30 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 				return err
 			}
 		}
+
+		for _, v1 := range v.Traits {
+			var trait = Trait{
+				ContractAddress: v.AssetContract.Address,
+				TokenId:         v.TokenID,
+				TraitType:       v1.TraitType,
+				Value:           v1.Value,
+				DisplayType:     v1.DisplayType,
+				MaxValue:        v1.MaxValue,
+				TraitCount:      v1.TraitCount,
+				Order:           v1.Order,
+			}
+			var tmp3 Trait
+			rows3 := db.Table("traits").
+				Where("contract_address = ? AND token_id = ? AND trait_type = ? AND value = ?", v.AssetContract.Address, v.TokenID, v1.TraitType, v1.Value).
+				Find(&tmp3).RowsAffected
+			if rows3 == 0 {
+				if err := db.Table("traits").Create(&trait).Error; err != nil {
+					logs.GetLogger().Error(err)
+					return err
+				}
+			}
+		}
+
 	}
 	// No blocking query opensea assets_top_ownerships
 	go queryAssetsTopOwnerShip(db, assets)
@@ -121,20 +177,34 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 func FindAssetByOwner(owner string) ([]*Asset, error) {
 	var assets []*Asset
 	db := database.GetDB()
-	if err := db.Table("assets").Where("owner = ?", owner).Find(&assets).Error; err != nil {
+	if err := db.Table("assets").
+		Where("owner = ? AND is_delete = 0", owner).
+		Find(&assets).Error; err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
 	for _, v := range assets {
-		if err := db.Table("collections").Where("slug = ?", v.Slug).Find(&v.Collection).Error; err != nil && err != gorm.ErrRecordNotFound {
+		if err := db.Table("collections").
+			Where("slug = ?", v.Slug).
+			Find(&v.Collection).Error; err != nil && err != gorm.ErrRecordNotFound {
 			logs.GetLogger().Error(err)
 			return nil, err
 		}
-		if err := db.Table("contracts").Where("address = ?", v.ContractAddress).Find(&v.Contract).Error; err != nil && err != gorm.ErrRecordNotFound {
+		if err := db.Table("contracts").
+			Where("address = ?", v.ContractAddress).
+			Find(&v.Contract).Error; err != nil && err != gorm.ErrRecordNotFound {
 			logs.GetLogger().Error(err)
 			return nil, err
 		}
-		if err := db.Table("assets_top_ownerships").Where("contract_address = ? AND token_id = ?", v.ContractAddress, v.TokenId).Find(&v.AssetsTopOwnerships).Error; err != nil && err != gorm.ErrRecordNotFound {
+		if err := db.Table("assets_top_ownerships").
+			Where("contract_address = ? AND token_id = ?", v.ContractAddress, v.TokenId).
+			Find(&v.AssetsTopOwnerships).Error; err != nil && err != gorm.ErrRecordNotFound {
+			logs.GetLogger().Error(err)
+			return nil, err
+		}
+		if err := db.Table("traits").
+			Where("contract_address = ? AND token_id = ?", v.ContractAddress, v.TokenId).
+			Find(&v.Traits).Error; err != nil && err != gorm.ErrRecordNotFound {
 			logs.GetLogger().Error(err)
 			return nil, err
 		}
@@ -148,11 +218,30 @@ func FindWorksBySlug(owner, slug string) ([]*Asset, error) {
 	var assets []*Asset
 	db := database.GetDB()
 
-	if err := db.Table("assets").Where("owner = ? AND slug = ?", owner, slug).Find(&assets).Error; err != nil && err != gorm.ErrRecordNotFound {
+	if err := db.Table("assets").
+		Where("owner = ? AND slug = ? AND is_delete = 0", owner, slug).
+		Find(&assets).Error; err != nil && err != gorm.ErrRecordNotFound {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
 	return assets, nil
+}
+
+func DeleteAssetByTokenID(contractAddress, tokenID string) error {
+	db := database.GetDB()
+	if err := db.Table("assets").
+		Where("contract_address = ? AND token_id = ?", contractAddress, tokenID).
+		Update("is_delete", 1).Error; err != nil && err != gorm.ErrRecordNotFound {
+		logs.GetLogger().Error(err)
+		return err
+	}
+	if err := db.Table("traits").
+		Where("contract_address = ? AND token_id = ?", contractAddress, tokenID).
+		Update("is_delete", 1).Error; err != nil && err != gorm.ErrRecordNotFound {
+		logs.GetLogger().Error(err)
+		return err
+	}
+	return nil
 }
 
 func queryAssetsTopOwnerShip(db *gorm.DB, assets *OwnerAsset) error {
