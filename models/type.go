@@ -219,12 +219,12 @@ type AutoAsset struct {
 		Config        string `json:"config"`
 	} `json:"creator"`
 	Traits []struct {
-		TraitType   string      `json:"trait_type"`
-		Value       string      `json:"value"`
-		DisplayType interface{} `json:"display_type"`
-		MaxValue    interface{} `json:"max_value"`
-		TraitCount  int         `json:"trait_count"`
-		Order       interface{} `json:"order"`
+		TraitType   string `json:"trait_type"`
+		Value       string `json:"value"`
+		DisplayType string `json:"display_type"`
+		MaxValue    int    `json:"max_value"`
+		TraitCount  int    `json:"trait_count"`
+		Order       string `json:"order"`
 	} `json:"traits"`
 	TopOwnerships []struct {
 		Owner struct {

@@ -17,6 +17,7 @@ import (
 	"math/big"
 	"net/http"
 	constants2 "openseasync/common/constants"
+	"openseasync/config"
 	"openseasync/logs"
 	"os"
 	"path/filepath"
@@ -206,8 +207,14 @@ func MD5(v string) string {
 }
 
 func RequestOpenSeaAssets(owner string, offset, limit int64) ([]byte, error) {
-	url := fmt.Sprintf("%s?owner=%s&offset=%d&limit=%d", constants2.OPENSEA_ASSETS_URL, owner, offset, limit)
+	openSeaAssetsURL := constants2.OPENSEA_DEV_ASSETS_URL
+	if !config.GetConfig().Dev {
+		openSeaAssetsURL = constants2.OPENSEA_PROD_ASSETS_URL
+	}
+
+	url := fmt.Sprintf("%s?owner=%s&offset=%d&limit=%d", openSeaAssetsURL, owner, offset, limit)
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	req.Header.Add("X-API-KEY", constants2.OPENSEA_API_KEY)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		logs.GetLogger().Error(err)
@@ -222,8 +229,13 @@ func RequestOpenSeaAssets(owner string, offset, limit int64) ([]byte, error) {
 }
 
 func RequestOpenSeaCollections(owner string, offset, limit int64) ([]byte, error) {
-	url := fmt.Sprintf("%s?asset_owner=%s&offset=%d&limit=%d", constants2.OPENSEA_COLLECTION_URL, owner, offset, limit)
+	openSeaCollectionsURL := constants2.OPENSEA_DEV_COLLECTION_URL
+	if !config.GetConfig().Dev {
+		openSeaCollectionsURL = constants2.OPENSEA_PROD_COLLECTIONS_URL
+	}
+	url := fmt.Sprintf("%s?asset_owner=%s&offset=%d&limit=%d", openSeaCollectionsURL, owner, offset, limit)
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	req.Header.Add("X-API-KEY", constants2.OPENSEA_API_KEY)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		logs.GetLogger().Error(err)
@@ -238,9 +250,13 @@ func RequestOpenSeaCollections(owner string, offset, limit int64) ([]byte, error
 }
 
 func RequestOpenSeaSingleAsset(contractAddress, tokenId string) ([]byte, error) {
-	url := fmt.Sprintf("%s/%s/%s", constants2.OPENSEA_SINGLE_ASSET_URL, contractAddress, tokenId)
-	fmt.Println(url)
+	openSeaSingleAssetURL := constants2.OPENSEA_DEV_SINGLE_ASSET_URL
+	if !config.GetConfig().Dev {
+		openSeaSingleAssetURL = constants2.OPENSEA_PROD_SINGLE_ASSET_URL
+	}
+	url := fmt.Sprintf("%s/%s/%s", openSeaSingleAssetURL, contractAddress, tokenId)
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	req.Header.Add("X-API-KEY", constants2.OPENSEA_API_KEY)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		logs.GetLogger().Error(err)
