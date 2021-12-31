@@ -26,6 +26,7 @@ func openSeaOwnerAssetsSync(owner string) error {
 		// If the number of requests is too many, a 429 error code will be thrown
 		content, err := utils.RequestOpenSeaAssets(owner, 50*(n-1), 50)
 		if err != nil {
+			logs.GetLogger().Error(err)
 			return err
 		}
 		var assets models.OwnerAsset
@@ -37,6 +38,7 @@ func openSeaOwnerAssetsSync(owner string) error {
 			break
 		}
 		if err = models.InsertOpenSeaAsset(&assets, owner); err != nil {
+			logs.GetLogger().Error(err)
 			return err
 		}
 		if len(assets.Assets) < 50 {
@@ -55,6 +57,7 @@ func openSeaOwnerCollectionsSync(owner string) error {
 	for {
 		content, err := utils.RequestOpenSeaCollections(owner, 300*(n-1), 300*n)
 		if err != nil {
+			logs.GetLogger().Error(err)
 			return err
 		}
 		var collections models.OwnerCollection
@@ -78,6 +81,7 @@ func openSeaOwnerCollectionsSync(owner string) error {
 func getAssetByOwner(owner string) ([]*models.Asset, error) {
 	assets, err := models.FindAssetByOwner(owner)
 	if err != nil {
+		logs.GetLogger().Error(err)
 		return nil, err
 	}
 	return assets, nil
@@ -87,6 +91,7 @@ func getAssetByOwner(owner string) ([]*models.Asset, error) {
 func getAssetBySlug(owner, slug string) ([]*models.Asset, error) {
 	assets, err := models.FindWorksBySlug(owner, slug)
 	if err != nil {
+		logs.GetLogger().Error(err)
 		return nil, err
 	}
 	return assets, nil
@@ -96,6 +101,7 @@ func getAssetBySlug(owner, slug string) ([]*models.Asset, error) {
 func getCollectionsByOwner(owner string) ([]*models.Collection, error) {
 	collections, err := models.FindCollectionByOwner(owner)
 	if err != nil {
+		logs.GetLogger().Error(err)
 		return nil, err
 	}
 	return collections, nil
@@ -104,6 +110,7 @@ func getCollectionsByOwner(owner string) ([]*models.Collection, error) {
 // deleteAssetByTokenID delete asset
 func deleteAssetByTokenID(contractAddress, tokenID string) error {
 	if err := models.DeleteAssetByTokenID(contractAddress, tokenID); err != nil {
+		logs.GetLogger().Error(err)
 		return err
 	}
 	return nil
@@ -112,6 +119,7 @@ func deleteAssetByTokenID(contractAddress, tokenID string) error {
 // deleteCollectionBySlug delete collection
 func deleteCollectionBySlug(owner, slug string) error {
 	if err := models.DeleteCollectionBySlug(owner, slug); err != nil {
+		logs.GetLogger().Error(err)
 		return err
 	}
 	return nil
