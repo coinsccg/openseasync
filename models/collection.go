@@ -5,6 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"openseasync/database"
 	"openseasync/logs"
+	"time"
 )
 
 var CONNOT_DELETE_COLLECTION_ERR = errors.New("Cannot delete a collection that has an asset")
@@ -19,12 +20,13 @@ type Collection struct {
 	LargeImageURL  string `json:"large_image_url"`  // 头像大图
 	IsDelete       int8   `json:"is_delete"`        // 是否删除 1删除 0未删除 默认为0
 	CreateDate     string `json:"create_date"`      // 集合创建时间
+	Date           int    `json:"date"`             // 刷新时间
 }
 
 // InsertOpenSeaCollection find collection through opensea API and insert
 func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 	db := database.GetDB()
-
+	date := int(time.Now().Unix())
 	for _, v := range collections.Collections {
 		var collection = Collection{
 			Slug:           v.Slug,
@@ -35,6 +37,7 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 			ImageURL:       v.ImageURL,
 			LargeImageURL:  v.LargeImageURL,
 			CreateDate:     v.CreatedDate,
+			Date:           date,
 		}
 
 		// gorm v1  batch insert is not supported
@@ -58,12 +61,20 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 					"banner_image_url": v.BannerImageURL,
 					"image_url":        v.ImageURL,
 					"large_image_url":  v.LargeImageURL,
+					"date":             date,
 				}).Error; err != nil && err != gorm.ErrRecordNotFound {
 				logs.GetLogger().Error(err)
 				return err
 			}
 		}
 
+	}
+
+	if err := db.Table("collections").
+		Where("date < ?", date).
+		Update("is_delete", 1).Error; err != nil && err != gorm.ErrRecordNotFound {
+		logs.GetLogger().Error(err)
+		return err
 	}
 	return nil
 

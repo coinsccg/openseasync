@@ -18,7 +18,8 @@ create table if not exists `assets`
     creator_img_url text,
     token_metadata text,
     slug varchar(255) not null,
-    is_delete int(8)
+    is_delete int(8),
+    date int(11)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4;
 
 create table if not exists `collections`
@@ -31,7 +32,8 @@ create table if not exists `collections`
     image_url text,
     large_image_url text,
     is_delete int(8),
-    create_date varchar(32)
+    create_date varchar(32),
+    date int(11)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4;
 
 create table if not exists `contracts`
@@ -51,7 +53,9 @@ create table if not exists `assets_top_ownerships`
     token_id varchar(128) not null,
     owner char(42) not null,
     profile_img_url text,
-    quantity varchar(128)
+    quantity varchar(128),
+    is_delete int(8),
+    date int(11)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4;
 
 create table if not exists `traits`
@@ -64,5 +68,6 @@ create table if not exists `traits`
     max_value int(10),
     trait_count int(10),
     order varchar(255),
-    is_delete int(8)
+    is_delete int(8),
+    date int(11)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4;
