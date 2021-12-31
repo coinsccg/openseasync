@@ -1,73 +1,88 @@
-create database if not exists `payment_bridge` charset = 'utf8';
-use `payment_bridge`;
+create database if not exists `openseasync` charset = 'utf8';
+use `openseasync`;
 
-create table if not exists `assets`
+create table if not exists assets
 (
-    user_address char(42) not null,
-    title varchar(255),
-    image_url text,
-    image_preview_url text,
-    image_thumbnail_url text,
-    description text,
-    contract_address char(42) not null,
-    token_id varchar(128) not null,
-    num_sales int(10),
-    owner char(42) not null,
-    owner_img_url text,
-    creator char(42) not null,
-    creator_img_url text,
-    token_metadata text,
-    slug varchar(255) not null,
-    is_delete int(8),
-    date int(11)
-) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4;
+	id bigint auto_increment
+		primary key,
+	user_address char(42) not null,
+	title varchar(255) null,
+	image_url text null,
+	image_preview_url text null,
+	image_thumbnail_url text null,
+	description text null,
+	contract_address char(42) not null,
+	token_id varchar(128) not null,
+	num_sales int null,
+	owner char(42) not null,
+	owner_img_url text null,
+	creator char(42) not null,
+	creator_img_url text null,
+	token_metadata text null,
+	slug varchar(255) not null,
+	is_delete int null,
+	date int null
+)
+charset=utf8mb4;
 
-create table if not exists `collections`
+create table if not exists assets_top_ownerships
 (
-    slug varchar(255) not null,
-    owner char(42) not null,
-    name varchar(255),
-    banner_image_url text,
-    description text,
-    image_url text,
-    large_image_url text,
-    is_delete int(8),
-    create_date varchar(32),
-    date int(11)
-) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4;
+	id bigint auto_increment
+		primary key,
+	contract_address char(42) not null,
+	token_id varchar(128) not null,
+	owner char(42) not null,
+	profile_img_url text null,
+	quantity varchar(128) null,
+	is_delete int null,
+	date int null
+)
+charset=utf8mb4;
 
-create table if not exists `contracts`
+create table if not exists collections
 (
-    address char(42) not null,
-    contract_name varchar(255),
-    contract_type varchar(64),
-    symbol varchar(64),
-    schema_name varchar(32),
-    total_supply varchar(128),
-    Description text
-) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4;
+	id bigint auto_increment
+		primary key,
+	slug varchar(255) not null,
+	owner char(42) not null,
+	name varchar(255) null,
+	banner_image_url text null,
+	description text null,
+	image_url text null,
+	large_image_url text null,
+	is_delete int null,
+	create_date varchar(32) null,
+	date int null
+)
+charset=utf8mb4;
 
-create table if not exists `assets_top_ownerships`
+create table if not exists contracts
 (
-    contract_address char(42) not null,
-    token_id varchar(128) not null,
-    owner char(42) not null,
-    profile_img_url text,
-    quantity varchar(128),
-    is_delete int(8),
-    date int(11)
-) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4;
+	id bigint auto_increment
+		primary key,
+	address char(42) not null,
+	contract_name varchar(255) null,
+	contract_type varchar(64) null,
+	symbol varchar(64) null,
+	schema_name varchar(32) null,
+	total_supply varchar(128) null,
+	Description text null
+)
+charset=utf8mb4;
 
-create table if not exists `traits`
+create table if not exists traits
 (
-    contract_address char(42) not null,
-    token_id varchar(128) not null,
-    trait_type varchar(255),
-    value varchar(255),
-    display_type varchar(255),
-    max_value int(10),
-    trait_count int(10),
-    order varchar(255),
-    is_delete int(8),
-    date int(11)
-) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4;
+	id bigint auto_increment
+		primary key,
+	contract_address char(42) not null,
+	token_id varchar(128) not null,
+	trait_type varchar(255) null,
+	value varchar(255) null,
+	display_type varchar(255) null,
+	max_value int null,
+	trait_count int null,
+	order_by varchar(255) null,
+	is_delete int null,
+	date int null
+)
+charset=utf8mb4;

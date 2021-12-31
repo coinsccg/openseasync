@@ -11,6 +11,7 @@ import (
 var CONNOT_DELETE_COLLECTION_ERR = errors.New("Cannot delete a collection that has an asset")
 
 type Collection struct {
+	ID             int64  `json:"id"`               // 主键
 	Slug           string `json:"slug"`             // 集合唯一标识符
 	Owner          string `json:"owner"`            // 集合拥有者
 	Name           string `json:"name"`             // 集合名称
