@@ -6,6 +6,7 @@ import (
 	"openseasync/common"
 	"openseasync/common/constants"
 	"openseasync/common/errorinfo"
+	"openseasync/logs"
 	"openseasync/models"
 )
 
@@ -37,12 +38,14 @@ func OpenSeaOwnerDataSync(c *gin.Context) {
 
 	// sync assets
 	if err := openSeaOwnerAssetsSync(owner); err != nil {
+		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
 	}
 
 	// sync collections
 	if err := openSeaOwnerCollectionsSync(owner); err != nil {
+		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
 	}
@@ -57,6 +60,7 @@ func OpenSeaOwnerAssetsSync(c *gin.Context) {
 		return
 	}
 	if err := openSeaOwnerAssetsSync(owner); err != nil {
+		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
 	}
@@ -71,6 +75,7 @@ func OpenSeaOwnerCollectionsSync(c *gin.Context) {
 		return
 	}
 	if err := openSeaOwnerCollectionsSync(owner); err != nil {
+		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
 	}
@@ -85,6 +90,7 @@ func GetAssetsByOwner(c *gin.Context) {
 	}
 	assets, err := getAssetByOwner(owner)
 	if err != nil {
+		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
 		return
 	}
@@ -99,6 +105,7 @@ func GetCollectionsByOwner(c *gin.Context) {
 	}
 	collections, err := getCollectionsByOwner(owner)
 	if err != nil {
+		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
 		return
 	}
@@ -114,6 +121,7 @@ func GetAssetsBySlug(c *gin.Context) {
 	}
 	assets, err := getAssetBySlug(owner, slug)
 	if err != nil {
+		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
 		return
 	}
@@ -129,6 +137,7 @@ func DeleteAssetByTokenID(c *gin.Context) {
 	}
 	err := deleteAssetByTokenID(contractAddress, tokenID)
 	if err != nil {
+		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.UPDATE_DATA_TO_DB_ERROR_CODE, err.Error()))
 		return
 	}
@@ -147,6 +156,7 @@ func DeleteCollectionBySlug(c *gin.Context) {
 		c.JSON(http.StatusOK, common.CreateErrorResponse(errorinfo.UPDATE_DATA_TO_DB_ERROR_CODE, err.Error()))
 		return
 	} else if err != nil {
+		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
 		return
 	}

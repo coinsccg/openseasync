@@ -234,7 +234,11 @@ func RequestOpenSeaCollections(owner string, offset, limit int64) ([]byte, error
 		openSeaCollectionsURL = constants2.OPENSEA_PROD_COLLECTIONS_URL
 	}
 	url := fmt.Sprintf("%s?asset_owner=%s&offset=%d&limit=%d", openSeaCollectionsURL, owner, offset, limit)
-	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
 	req.Header.Add("X-API-KEY", constants2.OPENSEA_API_KEY)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -242,9 +246,14 @@ func RequestOpenSeaCollections(owner string, offset, limit int64) ([]byte, error
 		return nil, err
 	}
 	defer resp.Body.Close()
-	content, _ := ioutil.ReadAll(resp.Body)
+	content, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(string(content))
+		err = errors.New(string(content))
+		return nil, err
 	}
 	return content, nil
 }
@@ -255,7 +264,11 @@ func RequestOpenSeaSingleAsset(contractAddress, tokenId string) ([]byte, error) 
 		openSeaSingleAssetURL = constants2.OPENSEA_PROD_SINGLE_ASSET_URL
 	}
 	url := fmt.Sprintf("%s/%s/%s", openSeaSingleAssetURL, contractAddress, tokenId)
-	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
 	req.Header.Add("X-API-KEY", constants2.OPENSEA_API_KEY)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -263,9 +276,14 @@ func RequestOpenSeaSingleAsset(contractAddress, tokenId string) ([]byte, error) 
 		return nil, err
 	}
 	defer resp.Body.Close()
-	content, _ := ioutil.ReadAll(resp.Body)
+	content, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(string(content))
+		err = errors.New(string(content))
+		return nil, err
 	}
 	return content, nil
 }

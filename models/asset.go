@@ -10,6 +10,7 @@ import (
 )
 
 type Asset struct {
+	ID                int64  `json:"id"`                  // 主键
 	UserAddress       string `json:"user_address"`        // 用户地址
 	Title             string `json:"title"`               // NFT作品标题
 	ImageURL          string `json:"image_url"`           // NFT作品图片
@@ -36,6 +37,7 @@ type Asset struct {
 }
 
 type Contract struct {
+	ID           int64  `json:"id"`            // 主键
 	Address      string `json:"address"`       // 合约地址
 	ContractType string `json:"contract_type"` // 合约类型 semi-fungible可替代 non-fungible 不可替代
 	ContractName string `json:"contract_name"` // 合约名字
@@ -46,6 +48,7 @@ type Contract struct {
 }
 
 type Trait struct {
+	ID              int64  `json:"id"`         // 主键
 	ContractAddress string `json:"_"`          // 合约地址
 	TokenId         string `json:"_"`          // token id
 	TraitType       string `json:"trait_type"` // 特征类型
@@ -59,6 +62,7 @@ type Trait struct {
 }
 
 type AssetsTopOwnership struct {
+	ID              int64  `json:"id"`              // 主键
 	ContractAddress string `json:"_"`               // 合约地址
 	TokenId         string `json:"_"`               // token id
 	Owner           string `json:"owner"`           // 所有者地址
