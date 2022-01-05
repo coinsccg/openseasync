@@ -12,7 +12,7 @@ import (
 )
 
 type Asset struct {
-	ID                int64  `json:"id" bson:"id"`                                   // 主键
+	//ID                int64  `json:"id" bson:"id"`                                   // 主键
 	UserAddress       string `json:"user_address" bson:"user_address"`               // 用户地址
 	Title             string `json:"title" bson:"title"`                             // NFT作品标题
 	ImageURL          string `json:"image_url" bson:"image_url"`                     // NFT作品图片
@@ -40,7 +40,7 @@ type Asset struct {
 }
 
 type Contract struct {
-	ID           int64  `json:"id" bson:"id"`                       // 主键
+	//ID           int64  `json:"id" bson:"id"`                       // 主键
 	Address      string `json:"address" bson:"address"`             // 合约地址
 	ContractType string `json:"contract_type" bson:"contract_type"` // 合约类型 semi-fungible可替代 non-fungible 不可替代
 	ContractName string `json:"contract_name" bson:"contract_name"` // 合约名字
@@ -51,7 +51,7 @@ type Contract struct {
 }
 
 type Trait struct {
-	ID              int64  `json:"id" bson:"id"`                     // 主键
+	//ID              int64  `json:"id" bson:"id"`                     // 主键
 	UserAddress     string `json:"user_address" bson:"user_address"` // 用户地址
 	ContractAddress string `json:"_" bson:"contract_address"`        // 合约地址
 	TokenId         string `json:"_" bson:"token_id"`                // token id
@@ -66,7 +66,7 @@ type Trait struct {
 }
 
 type AssetsTopOwnership struct {
-	ID              int64  `json:"id" bson:"id"`                           // 主键
+	//ID              int64  `json:"id" bson:"id"`                           // 主键
 	UserAddress     string `json:"user_address" bson:"user_address"`       // 用户地址
 	ContractAddress string `json:"_" bson:"contract_address"`              // 合约地址
 	TokenId         string `json:"_" bson:"token_id"`                      // token id
