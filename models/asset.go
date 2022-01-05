@@ -251,22 +251,14 @@ func FindAssetByOwner(user string) ([]map[string]interface{}, error) {
 		var assetsTopOwnerships []AssetsTopOwnership
 		var traits []Trait
 		var tmp map[string]interface{}
-		cursor, err = db.Collection("collections").Find(context.TODO(), bson.M{"user_address": user, "slug": v.Slug})
+		err = db.Collection("collections").FindOne(context.TODO(), bson.M{"user_address": user, "slug": v.Slug}).Decode(&collection)
 		if err != nil {
-			logs.GetLogger().Error(err)
-			return nil, err
-		}
-		if err = cursor.All(context.TODO(), &collection); err != nil {
 			logs.GetLogger().Error(err)
 			return nil, err
 		}
 
-		cursor, err = db.Collection("contracts").Find(context.TODO(), bson.M{"address": v.ContractAddress})
+		err = db.Collection("contracts").FindOne(context.TODO(), bson.M{"address": v.ContractAddress}).Decode(&contract)
 		if err != nil {
-			logs.GetLogger().Error(err)
-			return nil, err
-		}
-		if err = cursor.All(context.TODO(), &contract); err != nil {
 			logs.GetLogger().Error(err)
 			return nil, err
 		}
