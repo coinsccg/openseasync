@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+
 // InsertOpenSeaAsset query Aseets through opensea API and insert
 func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 	db := database.GetMongoClient()
