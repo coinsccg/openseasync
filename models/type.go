@@ -86,12 +86,55 @@ type AssetsTopOwnership struct {
 	RefreshTime     int    `json:"refresh_time" bson:"refresh_time"`       // 刷新时间
 }
 
+type ItemActivity struct {
+	Id                  int    `json:"id"`
+	UserAddress         string `json:"user_address" bson:"user_address"`
+	ContractAddress     string `json:"contract_address" bson:"contract_address"`
+	TokenId             string `json:"token_id" bson:"token_id"`
+	BidAmount           string `json:"bid_amount" bson:"bid_amount"` // 投标金额
+	CreateDate          string `json:"create_date" bson:"create_date"`
+	TotalPrice          string `json:"total_price" bson:"total_price"`                       // 成交价格
+	Seller              string `json:"seller" bson:"seller"`                                 // 售卖者地址
+	SellerProfileImgURL string `json:"seller_profile_img_url" bson:"seller_profile_img_url"` // 售卖者头像
+	Winner              string `json:"winner" bson:"winner"`                                 // 购买者地址
+	WinnerProfileImgURL string `json:"winner_profile_img_url" bson:"winner_profile_img_url"` // 购买者头像
+	IsDelete            int8   `json:"is_delete" bson:"is_delete"`                           // 是否删除 1删除 0未删除 默认为0
+	EventType           string `json:"event_type" bson:"event_type"`                         // 事件类型
+
+	Transaction struct {
+		BlockHash   string `json:"block_hash" bson:"block_hash"`
+		BlockNumber string `json:"block_number" bson:"block_number"`
+		FromAccount struct {
+			User struct {
+				Username interface{} `json:"username" bson:"username"`
+			} `json:"user" bson:"user"`
+			ProfileImgURL string `json:"profile_img_url" bson:"profile_img_url"`
+			Address       string `json:"address" bson:"address"` // 支付人
+			Config        string `json:"config" bson:"config"`
+		} `json:"from_account" bson:"from_account"`
+		ID        int    `json:"id" bson:"id"`
+		Timestamp string `json:"timestamp" bson:"timestamp"`
+		ToAccount struct {
+			User          interface{} `json:"user" bson:"user"`
+			ProfileImgURL string      `json:"profile_img_url" bson:"profile_img_url"`
+			Address       string      `json:"address" bson:"address"` // 支付对象 合约地址
+			Config        string      `json:"config" bson:"config"`
+		} `json:"to_account" bson:"to_account"`
+		TransactionHash  string `json:"transaction_hash" bson:"transaction_hash"`
+		TransactionIndex string `json:"transaction_index" bson:"transaction_index"`
+	} `json:"transaction" bson:"transaction"` // 支付的eth链上交易记录
+}
+
 type OwnerAsset struct {
 	Assets []AutoAsset `json:"assets"`
 }
 
 type OwnerCollection struct {
 	Collections []AutoCollection `json:"collections"`
+}
+
+type Event struct {
+	AssetEvents []AutoEvent `json:"asset_events"`
 }
 
 type AutoAsset struct {
@@ -413,4 +456,159 @@ type AutoCollection struct {
 	InstagramUsername           string  `json:"instagram_username"`
 	WikiURL                     string  `json:"wiki_url"`
 	OwnedAssetCount             big.Int `json:"owned_asset_count"`
+}
+
+type AutoEvent struct {
+	ApprovedAccount interface{} `json:"approved_account"`
+	Asset           struct {
+		ID                   int         `json:"id"`
+		TokenID              string      `json:"token_id"`
+		NumSales             int         `json:"num_sales"`
+		BackgroundColor      interface{} `json:"background_color"`
+		ImageURL             string      `json:"image_url"`
+		ImagePreviewURL      string      `json:"image_preview_url"`
+		ImageThumbnailURL    string      `json:"image_thumbnail_url"`
+		ImageOriginalURL     string      `json:"image_original_url"`
+		AnimationURL         interface{} `json:"animation_url"`
+		AnimationOriginalURL interface{} `json:"animation_original_url"`
+		Name                 string      `json:"name"`
+		Description          string      `json:"description"`
+		ExternalLink         interface{} `json:"external_link"`
+		AssetContract        struct {
+			Address                     string      `json:"address"`
+			AssetContractType           string      `json:"asset_contract_type"`
+			CreatedDate                 string      `json:"created_date"`
+			Name                        string      `json:"name"`
+			NftVersion                  string      `json:"nft_version"`
+			OpenseaVersion              interface{} `json:"opensea_version"`
+			Owner                       int         `json:"owner"`
+			SchemaName                  string      `json:"schema_name"`
+			Symbol                      string      `json:"symbol"`
+			TotalSupply                 string      `json:"total_supply"`
+			Description                 string      `json:"description"`
+			ExternalLink                interface{} `json:"external_link"`
+			ImageURL                    string      `json:"image_url"`
+			DefaultToFiat               bool        `json:"default_to_fiat"`
+			DevBuyerFeeBasisPoints      int         `json:"dev_buyer_fee_basis_points"`
+			DevSellerFeeBasisPoints     int         `json:"dev_seller_fee_basis_points"`
+			OnlyProxiedTransfers        bool        `json:"only_proxied_transfers"`
+			OpenseaBuyerFeeBasisPoints  int         `json:"opensea_buyer_fee_basis_points"`
+			OpenseaSellerFeeBasisPoints int         `json:"opensea_seller_fee_basis_points"`
+			BuyerFeeBasisPoints         int         `json:"buyer_fee_basis_points"`
+			SellerFeeBasisPoints        int         `json:"seller_fee_basis_points"`
+			PayoutAddress               string      `json:"payout_address"`
+		} `json:"asset_contract"`
+		Permalink  string `json:"permalink"`
+		Collection struct {
+			BannerImageURL          string      `json:"banner_image_url"`
+			ChatURL                 interface{} `json:"chat_url"`
+			CreatedDate             string      `json:"created_date"`
+			DefaultToFiat           bool        `json:"default_to_fiat"`
+			Description             string      `json:"description"`
+			DevBuyerFeeBasisPoints  string      `json:"dev_buyer_fee_basis_points"`
+			DevSellerFeeBasisPoints string      `json:"dev_seller_fee_basis_points"`
+			DiscordURL              interface{} `json:"discord_url"`
+			DisplayData             struct {
+				CardDisplayStyle string `json:"card_display_style"`
+			} `json:"display_data"`
+			ExternalURL                 interface{} `json:"external_url"`
+			Featured                    bool        `json:"featured"`
+			FeaturedImageURL            string      `json:"featured_image_url"`
+			Hidden                      bool        `json:"hidden"`
+			SafelistRequestStatus       string      `json:"safelist_request_status"`
+			ImageURL                    string      `json:"image_url"`
+			IsSubjectToWhitelist        bool        `json:"is_subject_to_whitelist"`
+			LargeImageURL               string      `json:"large_image_url"`
+			MediumUsername              interface{} `json:"medium_username"`
+			Name                        string      `json:"name"`
+			OnlyProxiedTransfers        bool        `json:"only_proxied_transfers"`
+			OpenseaBuyerFeeBasisPoints  string      `json:"opensea_buyer_fee_basis_points"`
+			OpenseaSellerFeeBasisPoints string      `json:"opensea_seller_fee_basis_points"`
+			PayoutAddress               string      `json:"payout_address"`
+			RequireEmail                bool        `json:"require_email"`
+			ShortDescription            interface{} `json:"short_description"`
+			Slug                        string      `json:"slug"`
+			TelegramURL                 interface{} `json:"telegram_url"`
+			TwitterUsername             interface{} `json:"twitter_username"`
+			InstagramUsername           interface{} `json:"instagram_username"`
+			WikiURL                     interface{} `json:"wiki_url"`
+		} `json:"collection"`
+		Decimals      int    `json:"decimals"`
+		TokenMetadata string `json:"token_metadata"`
+		Owner         struct {
+			User struct {
+				Username interface{} `json:"username"`
+			} `json:"user"`
+			ProfileImgURL string `json:"profile_img_url"`
+			Address       string `json:"address"`
+			Config        string `json:"config"`
+		} `json:"owner"`
+	} `json:"asset"`
+	AssetBundle             interface{} `json:"asset_bundle"`
+	AuctionType             interface{} `json:"auction_type"`
+	BidAmount               string      `json:"bid_amount"`
+	CollectionSlug          string      `json:"collection_slug"`
+	ContractAddress         string      `json:"contract_address"`
+	CreatedDate             string      `json:"created_date"`
+	CustomEventName         interface{} `json:"custom_event_name"`
+	DevFeePaymentEvent      interface{} `json:"dev_fee_payment_event"`
+	DevSellerFeeBasisPoints int         `json:"dev_seller_fee_basis_points"`
+	Duration                interface{} `json:"duration"`
+	EndingPrice             interface{} `json:"ending_price"`
+	EventType               string      `json:"event_type"`
+	FromAccount             interface{} `json:"from_account"`
+	ID                      int         `json:"id"`
+	IsPrivate               bool        `json:"is_private"`
+	OwnerAccount            interface{} `json:"owner_account"`
+	PaymentToken            struct {
+		ID       int         `json:"id"`
+		Symbol   string      `json:"symbol"`
+		Address  string      `json:"address"`
+		ImageURL string      `json:"image_url"`
+		Name     interface{} `json:"name"`
+		Decimals int         `json:"decimals"`
+		EthPrice string      `json:"eth_price"`
+		UsdPrice string      `json:"usd_price"`
+	} `json:"payment_token"`
+	Quantity string `json:"quantity"`
+	Seller   struct {
+		User          interface{} `json:"user"`
+		ProfileImgURL string      `json:"profile_img_url"`
+		Address       string      `json:"address"`
+		Config        string      `json:"config"`
+	} `json:"seller"`
+	StartingPrice interface{} `json:"starting_price"`
+	ToAccount     interface{} `json:"to_account"`
+	TotalPrice    string      `json:"total_price"`
+	Transaction   struct {
+		BlockHash   string `json:"block_hash" bson:"block_hash"`
+		BlockNumber string `json:"block_number" bson:"block_number"`
+		FromAccount struct {
+			User struct {
+				Username interface{} `json:"username" bson:"username"`
+			} `json:"user" bson:"user"`
+			ProfileImgURL string `json:"profile_img_url" bson:"profile_img_url"`
+			Address       string `json:"address" bson:"address"` // 支付人
+			Config        string `json:"config" bson:"config"`
+		} `json:"from_account" bson:"from_account"`
+		ID        int    `json:"id" bson:"id"`
+		Timestamp string `json:"timestamp" bson:"timestamp"`
+		ToAccount struct {
+			User          interface{} `json:"user" bson:"user"`
+			ProfileImgURL string      `json:"profile_img_url" bson:"profile_img_url"`
+			Address       string      `json:"address" bson:"address"` // 支付对象 合约地址
+			Config        string      `json:"config" bson:"config"`
+		} `json:"to_account" bson:"to_account"`
+		TransactionHash  string `json:"transaction_hash" bson:"transaction_hash"`
+		TransactionIndex string `json:"transaction_index" bson:"transaction_index"`
+	} `json:"transaction" bson:"transaction"` // 支付的eth链上交易记录
+	WinnerAccount struct {
+		User struct {
+			Username interface{} `json:"username"`
+		} `json:"user"`
+		ProfileImgURL string `json:"profile_img_url"`
+		Address       string `json:"address"`
+		Config        string `json:"config"`
+	} `json:"winner_account"`
+	ListingTime string `json:"listing_time"`
 }
