@@ -82,6 +82,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 			logs.GetLogger().Error(err)
 			return err
 		}
+
 		for _, v2 := range autoAsset.TopOwnerships {
 			var assetsTopOwnership = AssetsTopOwnership{
 				UserAddress:     user,
@@ -110,7 +111,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 				return err
 			}
 		} else {
-			// Refresh synchronization time
+			// update
 			if _, err = db.Collection("assets").UpdateOne(
 				context.TODO(),
 				bson.M{"user_address": user, "contract_address": v.AssetContract.Address, "token_id": v.TokenID, "is_delete": 0},
@@ -133,6 +134,62 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 			if _, err = db.Collection("contracts").InsertOne(context.TODO(), &contract); err != nil {
 				logs.GetLogger().Error(err)
 				return err
+			}
+		}
+
+		// Insert transaction
+		time.Sleep(time.Second * 2)
+		// If the number of requests is too many, a 429 error code will be thrown
+		resp, err = utils.RequestOpenSeaEvent(v.AssetContract.Address, v.TokenID)
+		if err != nil {
+			logs.GetLogger().Error(err)
+			return err
+		}
+		var autoEvents []AutoEvent
+		if err = json.Unmarshal(resp, &autoEvents); err != nil {
+			logs.GetLogger().Error(err)
+			return err
+		}
+		for _, v3 := range autoEvents {
+			var itemActivity = ItemActivity{
+				UserAddress:         user,
+				ContractAddress:     v.AssetContract.Address,
+				TokenId:             v.TokenID,
+				BidAmount:           v3.BidAmount,
+				CreateDate:          v3.CreatedDate,
+				TotalPrice:          v3.TotalPrice,
+				Seller:              v3.Seller.Address,
+				SellerProfileImgURL: v3.Seller.ProfileImgURL,
+				Winner:              v3.WinnerAccount.Address,
+				WinnerProfileImgURL: v3.WinnerAccount.ProfileImgURL,
+				Transaction:         v3.Transaction,
+			}
+			count, err := db.Collection("item_activity").CountDocuments(
+				context.TODO(),
+				bson.M{"user_address": user, "contract_address": v.AssetContract.Address, "token_id": v.TokenID,
+					"is_delete": 0})
+			if err != nil {
+				logs.GetLogger().Error(err)
+				return err
+			}
+			if count == 0 {
+				if _, err = db.Collection("item_activity").InsertOne(context.TODO(), &itemActivity); err != nil {
+					logs.GetLogger().Error(err)
+					return err
+				}
+			} else {
+				// update
+				if _, err = db.Collection("item_activity").UpdateOne(
+					context.TODO(),
+					bson.M{"user_address": user, "contract_address": v.AssetContract.Address, "token_id": v.TokenID, "is_delete": 0},
+					bson.M{"$set": bson.M{
+						"bid_amount": v3.BidAmount, "create_date": v3.CreatedDate, "total_price": v3.TotalPrice,
+						"seller": v3.Seller.Address, "seller_profile_img_url": v3.Seller.ProfileImgURL,
+						"winner": v3.WinnerAccount.Address, "winner_profile_img_url": v3.WinnerAccount.ProfileImgURL,
+						"transaction": v3.Transaction}}); err != nil {
+					logs.GetLogger().Error(err)
+					return err
+				}
 			}
 		}
 	}
@@ -167,9 +224,10 @@ func FindAssetByOwner(user string) ([]map[string]interface{}, error) {
 
 	for _, v := range assets {
 		var (
-			collection Collection
-			contract   Contract
-			result     map[string]interface{}
+			collection   Collection
+			contract     Contract
+			itemActivity ItemActivity
+			result       map[string]interface{}
 		)
 		err = db.Collection("collections").FindOne(
 			context.TODO(), bson.M{"user_address": user, "slug": v.Slug}).Decode(&collection)
@@ -184,6 +242,18 @@ func FindAssetByOwner(user string) ([]map[string]interface{}, error) {
 			logs.GetLogger().Error(err)
 			return nil, err
 		}
+
+		cursor, err := db.Collection("item_activitys").Find(
+			context.TODO(), bson.M{"user_address": user, "contract_address": v.ContractAddress, "token_id": v.TokenId, "is_delete": 0})
+		if err != nil {
+			logs.GetLogger().Error(err)
+			return nil, err
+		}
+		if err = cursor.All(context.TODO(), &itemActivity); err != nil {
+			logs.GetLogger().Error(err)
+			return nil, err
+		}
+
 		bytes, err := json.Marshal(v)
 		if err != nil {
 			logs.GetLogger().Error(err)
@@ -193,8 +263,10 @@ func FindAssetByOwner(user string) ([]map[string]interface{}, error) {
 			logs.GetLogger().Error(err)
 			return nil, err
 		}
+
 		result["contract"] = contract
 		result["collection"] = collection
+		result["item_activitys"] = itemActivity
 		assetsList = append(assetsList, result)
 	}
 
@@ -223,6 +295,13 @@ func FindWorksBySlug(user, slug string) ([]*Asset, error) {
 func DeleteAssetByTokenID(user, contractAddress, tokenID string) error {
 	db := database.GetMongoClient()
 	if _, err := db.Collection("assets").UpdateMany(
+		context.TODO(),
+		bson.M{"user_address": user, "contract_address": contractAddress, "token_id": tokenID},
+		bson.M{"$set": bson.M{"is_delete": 1}}); err != nil {
+		logs.GetLogger().Error(err)
+		return err
+	}
+	if _, err := db.Collection("item_activitys").UpdateMany(
 		context.TODO(),
 		bson.M{"user_address": user, "contract_address": contractAddress, "token_id": tokenID},
 		bson.M{"$set": bson.M{"is_delete": 1}}); err != nil {
