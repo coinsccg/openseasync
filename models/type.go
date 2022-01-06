@@ -87,40 +87,42 @@ type AssetsTopOwnership struct {
 }
 
 type ItemActivity struct {
-	UserAddress         string `json:"user_address"`
-	ContractAddress     string `json:"contract_address"`
-	TokenId             string `json:"token_id"`
-	BidAmount           string `json:"bid_amount"` // 投标金额
-	CreateDate          string `json:"create_date"`
-	TotalPrice          string `json:"total_price"`            // 成交价格
-	Seller              string `json:"seller"`                 // 售卖者地址
-	SellerProfileImgURL string `json:"seller_profile_img_url"` // 售卖者头像
-	Winner              string `json:"winner"`                 // 购买者地址
-	WinnerProfileImgURL string `json:"winner_profile_img_url"` // 购买者头像
-	IsDelete            int8   `json:"is_delete"`              // 是否删除 1删除 0未删除 默认为0
+	Id                  int    `json:"id"`
+	UserAddress         string `json:"user_address" bson:"user_address"`
+	ContractAddress     string `json:"contract_address" bson:"contract_address"`
+	TokenId             string `json:"token_id" bson:"token_id"`
+	BidAmount           string `json:"bid_amount" bson:"bid_amount"` // 投标金额
+	CreateDate          string `json:"create_date" bson:"create_date"`
+	TotalPrice          string `json:"total_price" bson:"total_price"`                       // 成交价格
+	Seller              string `json:"seller" bson:"seller"`                                 // 售卖者地址
+	SellerProfileImgURL string `json:"seller_profile_img_url" bson:"seller_profile_img_url"` // 售卖者头像
+	Winner              string `json:"winner" bson:"winner"`                                 // 购买者地址
+	WinnerProfileImgURL string `json:"winner_profile_img_url" bson:"winner_profile_img_url"` // 购买者头像
+	IsDelete            int8   `json:"is_delete" bson:"is_delete"`                           // 是否删除 1删除 0未删除 默认为0
+	EventType           string `json:"event_type" bson:"event_type"`                         // 事件类型
 
 	Transaction struct {
-		BlockHash   string `json:"block_hash"`
-		BlockNumber string `json:"block_number"`
+		BlockHash   string `json:"block_hash" bson:"block_hash"`
+		BlockNumber string `json:"block_number" bson:"block_number"`
 		FromAccount struct {
 			User struct {
-				Username interface{} `json:"username"`
-			} `json:"user"`
-			ProfileImgURL string `json:"profile_img_url"`
-			Address       string `json:"address"` // 支付人
-			Config        string `json:"config"`
-		} `json:"from_account"`
-		ID        int    `json:"id"`
-		Timestamp string `json:"timestamp"`
+				Username interface{} `json:"username" bson:"username"`
+			} `json:"user" bson:"user"`
+			ProfileImgURL string `json:"profile_img_url" bson:"profile_img_url"`
+			Address       string `json:"address" bson:"address"` // 支付人
+			Config        string `json:"config" bson:"config"`
+		} `json:"from_account" bson:"from_account"`
+		ID        int    `json:"id" bson:"id"`
+		Timestamp string `json:"timestamp" bson:"timestamp"`
 		ToAccount struct {
-			User          interface{} `json:"user"`
-			ProfileImgURL string      `json:"profile_img_url"`
-			Address       string      `json:"address"` // 支付对象 合约地址
-			Config        string      `json:"config"`
-		} `json:"to_account"`
-		TransactionHash  string `json:"transaction_hash"`
-		TransactionIndex string `json:"transaction_index"`
-	} `json:"transaction"` // 支付的eth链上交易记录
+			User          interface{} `json:"user" bson:"user"`
+			ProfileImgURL string      `json:"profile_img_url" bson:"profile_img_url"`
+			Address       string      `json:"address" bson:"address"` // 支付对象 合约地址
+			Config        string      `json:"config" bson:"config"`
+		} `json:"to_account" bson:"to_account"`
+		TransactionHash  string `json:"transaction_hash" bson:"transaction_hash"`
+		TransactionIndex string `json:"transaction_index" bson:"transaction_index"`
+	} `json:"transaction" bson:"transaction"` // 支付的eth链上交易记录
 }
 
 type OwnerAsset struct {
@@ -129,6 +131,10 @@ type OwnerAsset struct {
 
 type OwnerCollection struct {
 	Collections []AutoCollection `json:"collections"`
+}
+
+type Event struct {
+	AssetEvents []AutoEvent `json:"asset_events"`
 }
 
 type AutoAsset struct {
@@ -575,27 +581,27 @@ type AutoEvent struct {
 	ToAccount     interface{} `json:"to_account"`
 	TotalPrice    string      `json:"total_price"`
 	Transaction   struct {
-		BlockHash   string `json:"block_hash"`
-		BlockNumber string `json:"block_number"`
+		BlockHash   string `json:"block_hash" bson:"block_hash"`
+		BlockNumber string `json:"block_number" bson:"block_number"`
 		FromAccount struct {
 			User struct {
-				Username interface{} `json:"username"`
-			} `json:"user"`
-			ProfileImgURL string `json:"profile_img_url"`
-			Address       string `json:"address"`
-			Config        string `json:"config"`
-		} `json:"from_account"`
-		ID        int    `json:"id"`
-		Timestamp string `json:"timestamp"`
+				Username interface{} `json:"username" bson:"username"`
+			} `json:"user" bson:"user"`
+			ProfileImgURL string `json:"profile_img_url" bson:"profile_img_url"`
+			Address       string `json:"address" bson:"address"` // 支付人
+			Config        string `json:"config" bson:"config"`
+		} `json:"from_account" bson:"from_account"`
+		ID        int    `json:"id" bson:"id"`
+		Timestamp string `json:"timestamp" bson:"timestamp"`
 		ToAccount struct {
-			User          interface{} `json:"user"`
-			ProfileImgURL string      `json:"profile_img_url"`
-			Address       string      `json:"address"`
-			Config        string      `json:"config"`
-		} `json:"to_account"`
-		TransactionHash  string `json:"transaction_hash"`
-		TransactionIndex string `json:"transaction_index"`
-	} `json:"transaction"`
+			User          interface{} `json:"user" bson:"user"`
+			ProfileImgURL string      `json:"profile_img_url" bson:"profile_img_url"`
+			Address       string      `json:"address" bson:"address"` // 支付对象 合约地址
+			Config        string      `json:"config" bson:"config"`
+		} `json:"to_account" bson:"to_account"`
+		TransactionHash  string `json:"transaction_hash" bson:"transaction_hash"`
+		TransactionIndex string `json:"transaction_index" bson:"transaction_index"`
+	} `json:"transaction" bson:"transaction"` // 支付的eth链上交易记录
 	WinnerAccount struct {
 		User struct {
 			Username interface{} `json:"username"`

@@ -145,13 +145,15 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 			logs.GetLogger().Error(err)
 			return err
 		}
-		var autoEvents []AutoEvent
-		if err = json.Unmarshal(resp, &autoEvents); err != nil {
+		var event Event
+		if err = json.Unmarshal(resp, &event); err != nil {
 			logs.GetLogger().Error(err)
 			return err
 		}
-		for _, v3 := range autoEvents {
+
+		for _, v3 := range event.AssetEvents {
 			var itemActivity = ItemActivity{
+				Id:                  v3.ID,
 				UserAddress:         user,
 				ContractAddress:     v.AssetContract.Address,
 				TokenId:             v.TokenID,
@@ -162,29 +164,30 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 				SellerProfileImgURL: v3.Seller.ProfileImgURL,
 				Winner:              v3.WinnerAccount.Address,
 				WinnerProfileImgURL: v3.WinnerAccount.ProfileImgURL,
+				EventType:           v3.EventType,
 				Transaction:         v3.Transaction,
 			}
-			count, err := db.Collection("item_activity").CountDocuments(
+			count, err := db.Collection("item_activitys").CountDocuments(
 				context.TODO(),
-				bson.M{"user_address": user, "contract_address": v.AssetContract.Address, "token_id": v.TokenID,
+				bson.M{"user_address": user, "contract_address": v.AssetContract.Address, "token_id": v.TokenID, "id": v3.ID,
 					"is_delete": 0})
 			if err != nil {
 				logs.GetLogger().Error(err)
 				return err
 			}
 			if count == 0 {
-				if _, err = db.Collection("item_activity").InsertOne(context.TODO(), &itemActivity); err != nil {
+				if _, err = db.Collection("item_activitys").InsertOne(context.TODO(), &itemActivity); err != nil {
 					logs.GetLogger().Error(err)
 					return err
 				}
 			} else {
 				// update
-				if _, err = db.Collection("item_activity").UpdateOne(
+				if _, err = db.Collection("item_activitys").UpdateOne(
 					context.TODO(),
 					bson.M{"user_address": user, "contract_address": v.AssetContract.Address, "token_id": v.TokenID, "is_delete": 0},
 					bson.M{"$set": bson.M{
 						"bid_amount": v3.BidAmount, "create_date": v3.CreatedDate, "total_price": v3.TotalPrice,
-						"seller": v3.Seller.Address, "seller_profile_img_url": v3.Seller.ProfileImgURL,
+						"seller": v3.Seller.Address, "seller_profile_img_url": v3.Seller.ProfileImgURL, "event_type": v3.EventType,
 						"winner": v3.WinnerAccount.Address, "winner_profile_img_url": v3.WinnerAccount.ProfileImgURL,
 						"transaction": v3.Transaction}}); err != nil {
 					logs.GetLogger().Error(err)
@@ -224,10 +227,10 @@ func FindAssetByOwner(user string) ([]map[string]interface{}, error) {
 
 	for _, v := range assets {
 		var (
-			collection   Collection
-			contract     Contract
-			itemActivity ItemActivity
-			result       map[string]interface{}
+			collection    Collection
+			contract      Contract
+			itemActivitys []ItemActivity
+			result        map[string]interface{}
 		)
 		err = db.Collection("collections").FindOne(
 			context.TODO(), bson.M{"user_address": user, "slug": v.Slug}).Decode(&collection)
@@ -249,7 +252,7 @@ func FindAssetByOwner(user string) ([]map[string]interface{}, error) {
 			logs.GetLogger().Error(err)
 			return nil, err
 		}
-		if err = cursor.All(context.TODO(), &itemActivity); err != nil {
+		if err = cursor.All(context.TODO(), &itemActivitys); err != nil {
 			logs.GetLogger().Error(err)
 			return nil, err
 		}
@@ -266,7 +269,7 @@ func FindAssetByOwner(user string) ([]map[string]interface{}, error) {
 
 		result["contract"] = contract
 		result["collection"] = collection
-		result["item_activitys"] = itemActivity
+		result["item_activitys"] = itemActivitys
 		assetsList = append(assetsList, result)
 	}
 
