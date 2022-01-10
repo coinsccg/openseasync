@@ -26,6 +26,8 @@ type Asset struct {
 	AssetsTopOwnerships []AssetsTopOwnership `json:"assets_top_ownerships" bson:"assets_top_ownerships"`
 	Traits              []Trait              `json:"traits" bson:"traits"`
 
+	SellOrders SellOrder `json:"sell_orders" bson:"sell_orders"`
+
 	IsDelete    int8 `json:"is_delete" bson:"is_delete"`       // 是否删除 1删除 0未删除 默认为0
 	RefreshTime int  `json:"refresh_time" bson:"refresh_time"` // 刷新时间
 }
@@ -45,6 +47,7 @@ type Collection struct {
 	NumOwners       int     `json:"num_owners" bson:"num_owners"`               // 集合中输入自己的NFT个数
 	TotalSupply     int     `json:"total_supply" bson:"total_supply"`           // 集合中NFT总数
 	TotalVolume     float64 `json:"total_volume" bson:"total_volume"`           // 交易量
+	FloorPrice      float64 `json:"floor_price"`                                // 最低价格
 	OwnedAssetCount string  `json:"owned_asset_count" bson:"owned_asset_count"` // 所有NFT中属于自己的NFT个数 此地段可能是个big int, 所以采用string存储
 }
 
@@ -57,6 +60,21 @@ type Contract struct {
 	SchemaName   string `json:"schema_name" bson:"schema_name"`     // 合约类型
 	TotalSupply  string `json:"total_supply" bson:"total_supply"`   // 总供应量
 	Description  string `json:"description" bson:"description"`     // 合约描述
+}
+
+type SellOrder struct {
+	CreateDate   string `json:"create_date" bson:"create_date"`     // 创建时间
+	ClosingDate  string `json:"closing_date" bson:"closing_date"`   // 结束时间
+	CurrentPrice string `json:"current_price" bson:"current_price"` // 当前价格
+
+	PayTokenContract PayTokenContract `json:"pay_token_contract" bson:"pay_token_contract"` // 支付方式
+}
+
+type PayTokenContract struct {
+	Symbol   string `json:"symbol" bson:"symbol"`
+	ImageURL string `json:"image_url" bson:"image_url"`
+	EthPrice string `json:"eth_price" bson:"eth_price"`
+	UsdPrice string `json:"usd_price" bson:"usd_price"`
 }
 
 type Trait struct {
@@ -421,7 +439,7 @@ type AutoCollection struct {
 		AveragePrice          float64 `json:"average_price"`
 		NumReports            int     `json:"num_reports"`
 		MarketCap             float64 `json:"market_cap"`
-		FloorPrice            int     `json:"floor_price"`
+		FloorPrice            float64 `json:"floor_price"`
 	} `json:"stats"`
 	BannerImageURL          string `json:"banner_image_url"`
 	ChatURL                 string `json:"chat_url"`

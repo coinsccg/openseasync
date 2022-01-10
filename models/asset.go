@@ -69,6 +69,15 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 			traits = append(traits, trait)
 		}
 		asset.Traits = traits
+		if v.SellOrders != nil {
+			asset.SellOrders.CreateDate = v.SellOrders[0].CreatedDate
+			asset.SellOrders.ClosingDate = v.SellOrders[0].ClosingDate
+			asset.SellOrders.CurrentPrice = v.SellOrders[0].CurrentPrice
+			asset.SellOrders.PayTokenContract.Symbol = v.SellOrders[0].PaymentTokenContract.Symbol
+			asset.SellOrders.PayTokenContract.ImageURL = v.SellOrders[0].PaymentTokenContract.ImageURL
+			asset.SellOrders.PayTokenContract.EthPrice = v.SellOrders[0].PaymentTokenContract.EthPrice
+			asset.SellOrders.PayTokenContract.UsdPrice = v.SellOrders[0].PaymentTokenContract.UsdPrice
+		}
 
 		time.Sleep(time.Second * 2)
 		// If the number of requests is too many, a 429 error code will be thrown
@@ -111,13 +120,27 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 				return err
 			}
 		} else {
+			var sellOrders bson.M
+			if v.SellOrders != nil {
+				sellOrders = bson.M{
+					"create_date":   v.SellOrders[0].CreatedDate,
+					"closing_date":  v.SellOrders[0].ClosingDate,
+					"current_price": v.SellOrders[0].CurrentPrice,
+					"pay_token_contract": bson.M{
+						"symbol":    v.SellOrders[0].PaymentTokenContract.Symbol,
+						"image_url": v.SellOrders[0].PaymentTokenContract.ImageURL,
+						"eth_price": v.SellOrders[0].PaymentTokenContract.EthPrice,
+						"usd_price": v.SellOrders[0].PaymentTokenContract.UsdPrice,
+					},
+				}
+			}
 			// update
 			if _, err = db.Collection("assets").UpdateOne(
 				context.TODO(),
 				bson.M{"user_address": user, "contract_address": v.AssetContract.Address, "token_id": v.TokenID, "is_delete": 0},
 				bson.M{"$set": bson.M{"title": v.Name, "image_url": v.ImageURL, "image_preview_url": v.ImagePreviewURL,
 					"image_thumbnail_url": v.ImageThumbnailURL, "description": v.Description, "refresh_time": refreshTime,
-					"traits": traits, "assets_top_ownerships": assetTopOwnerships}}); err != nil {
+					"traits": traits, "assets_top_ownerships": assetTopOwnerships, "sell_orders": sellOrders}}); err != nil {
 				logs.GetLogger().Error(err)
 				return err
 			}

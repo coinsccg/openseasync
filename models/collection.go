@@ -29,6 +29,7 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 			NumOwners:       v.Stats.NumOwners,
 			TotalSupply:     int(v.Stats.TotalSupply),
 			TotalVolume:     v.Stats.TotalVolume,
+			FloorPrice:      v.Stats.FloorPrice,
 			OwnedAssetCount: v.OwnedAssetCount.String(),
 		}
 		count, err := db.Collection("collections").
@@ -48,7 +49,8 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 				context.TODO(),
 				bson.M{"user_address": user, "slug": v.Slug, "is_delete": 0},
 				bson.M{"$set": bson.M{"name": v.Name, "description": v.Description, "banner_image_url": v.BannerImageURL,
-					"image_url": v.ImageURL, "large_image_url": v.LargeImageURL, "refresh_time": refreshTime}}); err != nil {
+					"image_url": v.ImageURL, "large_image_url": v.LargeImageURL, "refresh_time": refreshTime, "floor_price": v.Stats.FloorPrice,
+				}}); err != nil {
 				logs.GetLogger().Error(err)
 				return err
 			}
