@@ -73,7 +73,7 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 func FindCollectionByOwner(user string, page, pageSize int64) (map[string]interface{}, error) {
 	var (
 		collections []*Collection
-		data        = make(map[string]interface{})
+		result      = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
 	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"user_address": user, "is_delete": 0})
@@ -93,10 +93,10 @@ func FindCollectionByOwner(user string, page, pageSize int64) (map[string]interf
 		return nil, err
 	}
 
-	data["data"] = collections
-	data["metadata"] = map[string]int64{"page": page, "pageSize": pageSize, "total": total, "totalPage": totalPage}
+	result["data"] = collections
+	result["metadata"] = map[string]int64{"page": page, "pageSize": pageSize, "total": total, "totalPage": totalPage}
 
-	return data, nil
+	return result, nil
 }
 
 // DeleteCollectionBySlug delete empty collection

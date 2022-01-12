@@ -80,32 +80,32 @@ func openSeaOwnerCollectionsSync(user string) error {
 
 // getAssetByOwner get assets by owner
 func getAssetByOwner(user string, page, pageSize int64) (map[string]interface{}, error) {
-	assets, err := models.FindAssetByOwner(user, page, pageSize)
+	result, err := models.FindAssetByOwner(user, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
-	return assets, nil
+	return result, nil
 }
 
 // getAssetBySlug get assets by owner
 func getAssetBySlug(user, slug string, page, pageSize int64) (map[string]interface{}, error) {
-	assets, err := models.FindWorksBySlug(user, slug, page, pageSize)
+	result, err := models.FindWorksBySlug(user, slug, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
-	return assets, nil
+	return result, nil
 }
 
 // getCollectionsByOwner get collection by owner
 func getCollectionsByOwner(user string, page, pageSize int64) (map[string]interface{}, error) {
-	collections, err := models.FindCollectionByOwner(user, page, pageSize)
+	result, err := models.FindCollectionByOwner(user, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
-	return collections, nil
+	return result, nil
 }
 
 // deleteAssetByTokenID delete asset

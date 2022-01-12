@@ -26,7 +26,7 @@ func HostManager(router *gin.RouterGroup) {
 
 func GetSwanMinerVersion(c *gin.Context) {
 	info := getSwanMinerHostInfo()
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(info))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(info, nil))
 }
 
 // sync opensea assets and collections
@@ -49,7 +49,7 @@ func OpenSeaOwnerDataSync(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil, nil))
 }
 
 // Deprecated: Recommended use OpenSeaOwnerDataSync
@@ -64,7 +64,7 @@ func OpenSeaOwnerAssetsSync(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil, nil))
 }
 
 // Deprecated: Recommended use OpenSeaOwnerDataSync
@@ -79,7 +79,7 @@ func OpenSeaOwnerCollectionsSync(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil, nil))
 }
 
 func GetAssetsByOwner(c *gin.Context) {
@@ -106,13 +106,13 @@ func GetAssetsByOwner(c *gin.Context) {
 		return
 	}
 
-	assets, err := getAssetByOwner(user, pageInt, pageSizeInt)
+	result, err := getAssetByOwner(user, pageInt, pageSizeInt)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(assets))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], result["metadata"]))
 }
 
 func GetCollectionsByOwner(c *gin.Context) {
@@ -137,13 +137,13 @@ func GetCollectionsByOwner(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	collections, err := getCollectionsByOwner(user, pageInt, pageSizeInt)
+	result, err := getCollectionsByOwner(user, pageInt, pageSizeInt)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(collections))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], result["metadata"]))
 }
 
 func GetAssetsBySlug(c *gin.Context) {
@@ -169,13 +169,13 @@ func GetAssetsBySlug(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	assets, err := getAssetBySlug(user, slug, pageInt, pageSizeInt)
+	result, err := getAssetBySlug(user, slug, pageInt, pageSizeInt)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(assets))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], result["metadata"]))
 }
 
 func DeleteAssetByTokenID(c *gin.Context) {
@@ -193,7 +193,7 @@ func DeleteAssetByTokenID(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.UPDATE_DATA_TO_DB_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil, nil))
 }
 
 func DeleteCollectionBySlug(c *gin.Context) {
@@ -212,5 +212,5 @@ func DeleteCollectionBySlug(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil, nil))
 }
