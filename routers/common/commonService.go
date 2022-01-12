@@ -89,7 +89,7 @@ func getAssetByOwner(user string, page, pageSize int64) (map[string]interface{},
 }
 
 // getAssetBySlug get assets by owner
-func getAssetBySlug(user, slug string, page, pageSize int64) ([]*models.Asset, error) {
+func getAssetBySlug(user, slug string, page, pageSize int64) (map[string]interface{}, error) {
 	assets, err := models.FindWorksBySlug(user, slug, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)

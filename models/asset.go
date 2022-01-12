@@ -239,7 +239,7 @@ func FindAssetByOwner(user string, page, pageSize int64) (map[string]interface{}
 	var (
 		assets     []*Asset
 		assetsList []map[string]interface{}
-		result     = make(map[string]interface{})
+		data       = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
 
@@ -308,17 +308,17 @@ func FindAssetByOwner(user string, page, pageSize int64) (map[string]interface{}
 		assetsList = append(assetsList, result)
 	}
 
-	result["data"] = assetsList
-	result["metadata"] = map[string]int64{"page": page, "pageSize": pageSize, "total": total, "totalPage": totalPage}
+	data["data"] = assetsList
+	data["metadata"] = map[string]int64{"page": page, "pageSize": pageSize, "total": total, "totalPage": totalPage}
 
-	return result, nil
+	return data, nil
 }
 
 // FindWorksBySlug find assets by collection
-func FindWorksBySlug(user, slug string, page, pageSize int64) ([]*Asset, error) {
+func FindWorksBySlug(user, slug string, page, pageSize int64) (map[string]interface{}, error) {
 	var (
 		assets []*Asset
-		result = make(map[string]interface{})
+		data   = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
 	total, err := db.Collection("assets").CountDocuments(context.TODO(), bson.M{"user_address": user, "slug": slug, "is_delete": 0})
@@ -338,9 +338,9 @@ func FindWorksBySlug(user, slug string, page, pageSize int64) ([]*Asset, error) 
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
-	result["data"] = assets
-	result["metadata"] = map[string]int64{"page": page, "pageSize": pageSize, "total": total, "totalPage": totalPage}
-	return assets, nil
+	data["data"] = assets
+	data["metadata"] = map[string]int64{"page": page, "pageSize": pageSize, "total": total, "totalPage": totalPage}
+	return data, nil
 }
 
 // DeleteAssetByTokenID delete asset by tokenId

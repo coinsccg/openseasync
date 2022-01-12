@@ -91,6 +91,7 @@ func GetAssetsByOwner(c *gin.Context) {
 		return
 	}
 	pageInt, err := strconv.ParseInt(page, 10, 64)
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
@@ -100,7 +101,7 @@ func GetAssetsByOwner(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	if pageInt >= 1 && pageSizeInt >= 1 {
+	if pageInt < 1 || pageSizeInt < 1 {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
@@ -132,7 +133,7 @@ func GetCollectionsByOwner(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	if pageInt >= 1 && pageSizeInt >= 1 {
+	if pageInt < 1 || pageSizeInt < 1 {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
@@ -164,7 +165,7 @@ func GetAssetsBySlug(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	if pageInt >= 1 && pageSizeInt >= 1 {
+	if pageInt < 1 || pageSizeInt < 1 {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
