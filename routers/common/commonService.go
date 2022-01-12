@@ -80,7 +80,7 @@ func openSeaOwnerCollectionsSync(user string) error {
 
 // getAssetByOwner get assets by owner
 func getAssetByOwner(user string, page, pageSize int64) (map[string]interface{}, error) {
-	result, err := models.FindAssetByOwner(user, page, pageSize)
+	result, err := models.FindAssetByOwner(user, nil, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -90,7 +90,7 @@ func getAssetByOwner(user string, page, pageSize int64) (map[string]interface{},
 
 // getAssetBySlug get assets by owner
 func getAssetBySlug(user, slug string, page, pageSize int64) (map[string]interface{}, error) {
-	result, err := models.FindWorksBySlug(user, slug, page, pageSize)
+	result, err := models.FindAssetByOwner(user, slug, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err

@@ -89,6 +89,8 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 			logs.GetLogger().Error(err)
 			return err
 		}
+
+		// insert top_owner_ships
 		var autoAsset AutoAsset
 		if err = json.Unmarshal(resp, &autoAsset); err != nil {
 			logs.GetLogger().Error(err)
@@ -109,6 +111,68 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 		}
 		asset.AssetsTopOwnerships = assetTopOwnerships
 
+		// insert order
+		for _, v4 := range autoAsset.Orders {
+			var orders = Orders{
+				CreateDate:     v4.CreatedDate,
+				ClosingDate:    v4.ClosingDate,
+				ExpirationTime: v4.ExpirationTime,
+				ListingTime:    v4.ListingTime,
+				OrderHash:      v4.OrderHash,
+				CurrentPrice:   v4.CurrentPrice,
+				CurrentBounty:  v4.CurrentBounty,
+				BasePrice:      v4.BasePrice,
+				PaymentToken:   v4.PaymentToken,
+				Target:         v4.Target,
+			}
+			orders.Metadata.ID = v4.Metadata.Asset.ID
+			orders.Metadata.Address = v4.Metadata.Asset.Address
+			orders.Metadata.Quantity = v4.Metadata.Asset.Quantity
+			orders.Metadata.Schema = v4.Metadata.Schema
+			orders.Maker.UserName = v4.Maker.User.Username
+			orders.Maker.ProfileImgURL = v4.Maker.ProfileImgURL
+			orders.Maker.Address = v4.Maker.Address
+			orders.Taker.UserName = v4.Taker.User.Username
+			orders.Taker.Address = v4.Taker.Address
+			orders.Taker.ProfileImgURL = v4.Taker.ProfileImgURL
+			orders.PayTokenContract.Symbol = v4.PaymentTokenContract.Symbol
+			orders.PayTokenContract.ImageURL = v4.PaymentTokenContract.ImageURL
+			orders.PayTokenContract.EthPrice = v4.PaymentTokenContract.EthPrice
+			orders.PayTokenContract.UsdPrice = v4.PaymentTokenContract.UsdPrice
+			count, err := db.Collection("orders").
+				CountDocuments(context.TODO(), bson.M{"order_hash": v4.OrderHash})
+			if err != nil {
+				logs.GetLogger().Error(err)
+				return err
+			}
+			if count == 0 {
+				if _, err = db.Collection("orders").InsertOne(context.TODO(), &orders); err != nil {
+					logs.GetLogger().Error(err)
+					return err
+				}
+			} else {
+				ordersByte, err := bson.Marshal(orders)
+				if err != nil {
+					logs.GetLogger().Error(err)
+					return err
+				}
+				var tmpOrders bson.M
+				if err := bson.Unmarshal(ordersByte, &tmpOrders); err != nil {
+					logs.GetLogger().Error(err)
+					return err
+				}
+
+				if _, err = db.Collection("assets").UpdateOne(
+					context.TODO(),
+					bson.M{"order_hash": v4.OrderHash}, tmpOrders); err != nil {
+					logs.GetLogger().Error(err)
+					return err
+				}
+			}
+
+		}
+
+		// insert assets
 		count, err := db.Collection("assets").CountDocuments(
 			context.TODO(),
 			bson.M{"user_address": user, "contract_address": v.AssetContract.Address, "token_id": v.TokenID,
@@ -163,7 +227,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 			}
 		}
 
-		// Insert transaction
+		// insert transaction
 		time.Sleep(time.Second * 2)
 		// If the number of requests is too many, a 429 error code will be thrown
 		resp, err = utils.RequestOpenSeaEvent(v.AssetContract.Address, v.TokenID)
@@ -177,6 +241,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 			return err
 		}
 
+		// insert item_activitys
 		for _, v3 := range event.AssetEvents {
 			var itemActivity = ItemActivity{
 				Id:                  v3.ID,
@@ -235,7 +300,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 }
 
 // FindAssetByOwner find assets by owner
-func FindAssetByOwner(user string, page, pageSize int64) (map[string]interface{}, error) {
+func FindAssetByOwner(user string, slug interface{}, page, pageSize int64) (map[string]interface{}, error) {
 	var (
 		assets     []*Asset
 		assetsList []map[string]interface{}
@@ -243,14 +308,19 @@ func FindAssetByOwner(user string, page, pageSize int64) (map[string]interface{}
 	)
 	db := database.GetMongoClient()
 
-	total, err := db.Collection("assets").CountDocuments(context.TODO(), bson.M{"user_address": user, "is_delete": 0})
+	condition := bson.M{"user_address": user, "is_delete": 0}
+	if slug != nil {
+		condition["slug"] = slug
+	}
+
+	total, err := db.Collection("assets").CountDocuments(context.TODO(), condition)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
 	totalPage := total/pageSize + 1
 	opts := options.Find().SetSkip((page - 1) * pageSize).SetLimit(pageSize)
-	cursor, err := db.Collection("assets").Find(context.TODO(), bson.M{"user_address": user, "is_delete": 0}, opts)
+	cursor, err := db.Collection("assets").Find(context.TODO(), condition, opts)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -265,6 +335,7 @@ func FindAssetByOwner(user string, page, pageSize int64) (map[string]interface{}
 			collection    Collection
 			contract      Contract
 			itemActivitys []ItemActivity
+			orders        []Orders
 			data          map[string]interface{}
 		)
 		err = db.Collection("collections").FindOne(
@@ -292,6 +363,17 @@ func FindAssetByOwner(user string, page, pageSize int64) (map[string]interface{}
 			return nil, err
 		}
 
+		cursor, err = db.Collection("orders").Find(
+			context.TODO(), bson.M{"contract_address": v.ContractAddress, "token_id": v.TokenId, "is_delete": 0})
+		if err != nil {
+			logs.GetLogger().Error(err)
+			return nil, err
+		}
+		if err = cursor.All(context.TODO(), &orders); err != nil {
+			logs.GetLogger().Error(err)
+			return nil, err
+		}
+
 		bytes, err := json.Marshal(v)
 		if err != nil {
 			logs.GetLogger().Error(err)
@@ -305,6 +387,7 @@ func FindAssetByOwner(user string, page, pageSize int64) (map[string]interface{}
 		data["contract"] = contract
 		data["collection"] = collection
 		data["item_activitys"] = itemActivitys
+		data["orders"] = orders
 		assetsList = append(assetsList, data)
 	}
 
@@ -338,6 +421,7 @@ func FindWorksBySlug(user, slug string, page, pageSize int64) (map[string]interf
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
+
 	result["data"] = assets
 	result["metadata"] = map[string]int64{"page": page, "pageSize": pageSize, "total": total, "totalPage": totalPage}
 	return result, nil
@@ -346,6 +430,7 @@ func FindWorksBySlug(user, slug string, page, pageSize int64) (map[string]interf
 // DeleteAssetByTokenID delete asset by tokenId
 func DeleteAssetByTokenID(user, contractAddress, tokenID string) error {
 	db := database.GetMongoClient()
+	// delete assets
 	if _, err := db.Collection("assets").UpdateMany(
 		context.TODO(),
 		bson.M{"user_address": user, "contract_address": contractAddress, "token_id": tokenID},
@@ -353,9 +438,20 @@ func DeleteAssetByTokenID(user, contractAddress, tokenID string) error {
 		logs.GetLogger().Error(err)
 		return err
 	}
+
+	// delete item_activitys
 	if _, err := db.Collection("item_activitys").UpdateMany(
 		context.TODO(),
 		bson.M{"user_address": user, "contract_address": contractAddress, "token_id": tokenID},
+		bson.M{"$set": bson.M{"is_delete": 1}}); err != nil {
+		logs.GetLogger().Error(err)
+		return err
+	}
+
+	// delete orders
+	if _, err := db.Collection("orders").UpdateMany(
+		context.TODO(),
+		bson.M{"contract_address": contractAddress, "token_id": tokenID},
 		bson.M{"$set": bson.M{"is_delete": 1}}); err != nil {
 		logs.GetLogger().Error(err)
 		return err
