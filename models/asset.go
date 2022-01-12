@@ -114,16 +114,18 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 		// insert order
 		for _, v4 := range autoAsset.Orders {
 			var orders = Orders{
-				CreateDate:     v4.CreatedDate,
-				ClosingDate:    v4.ClosingDate,
-				ExpirationTime: v4.ExpirationTime,
-				ListingTime:    v4.ListingTime,
-				OrderHash:      v4.OrderHash,
-				CurrentPrice:   v4.CurrentPrice,
-				CurrentBounty:  v4.CurrentBounty,
-				BasePrice:      v4.BasePrice,
-				PaymentToken:   v4.PaymentToken,
-				Target:         v4.Target,
+				ContractAddress: v.AssetContract.Address,
+				TokenId:         v.TokenID,
+				CreateDate:      v4.CreatedDate,
+				ClosingDate:     v4.ClosingDate,
+				ExpirationTime:  v4.ExpirationTime,
+				ListingTime:     v4.ListingTime,
+				OrderHash:       v4.OrderHash,
+				CurrentPrice:    v4.CurrentPrice,
+				CurrentBounty:   v4.CurrentBounty,
+				BasePrice:       v4.BasePrice,
+				PaymentToken:    v4.PaymentToken,
+				Target:          v4.Target,
 			}
 			orders.Metadata.ID = v4.Metadata.Asset.ID
 			orders.Metadata.Address = v4.Metadata.Asset.Address
