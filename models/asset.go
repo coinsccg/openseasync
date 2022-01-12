@@ -320,7 +320,10 @@ func FindAssetByOwner(user string, slug interface{}, page, pageSize int64) (map[
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
-	totalPage := total/pageSize + 1
+	totalPage := total / pageSize
+	if total%pageSize != 0 {
+		totalPage++
+	}
 	opts := options.Find().SetSkip((page - 1) * pageSize).SetLimit(pageSize)
 	cursor, err := db.Collection("assets").Find(context.TODO(), condition, opts)
 	if err != nil {
@@ -396,36 +399,6 @@ func FindAssetByOwner(user string, slug interface{}, page, pageSize int64) (map[
 	result["data"] = assetsList
 	result["metadata"] = map[string]int64{"page": page, "pageSize": pageSize, "total": total, "totalPage": totalPage}
 
-	return result, nil
-}
-
-// FindWorksBySlug find assets by collection
-func FindWorksBySlug(user, slug string, page, pageSize int64) (map[string]interface{}, error) {
-	var (
-		assets []*Asset
-		result = make(map[string]interface{})
-	)
-	db := database.GetMongoClient()
-	total, err := db.Collection("assets").CountDocuments(context.TODO(), bson.M{"user_address": user, "slug": slug, "is_delete": 0})
-	if err != nil {
-		logs.GetLogger().Error(err)
-		return nil, err
-	}
-	totalPage := total/pageSize + 1
-	opts := options.Find().SetSkip((page - 1) * pageSize).SetLimit(pageSize)
-	cursor, err := db.Collection("assets").Find(
-		context.TODO(), bson.M{"user_address": user, "slug": slug, "is_delete": 0}, opts)
-	if err != nil {
-		logs.GetLogger().Error(err)
-		return nil, err
-	}
-	if err = cursor.All(context.TODO(), &assets); err != nil {
-		logs.GetLogger().Error(err)
-		return nil, err
-	}
-
-	result["data"] = assets
-	result["metadata"] = map[string]int64{"page": page, "pageSize": pageSize, "total": total, "totalPage": totalPage}
 	return result, nil
 }
 

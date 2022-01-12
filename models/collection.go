@@ -81,7 +81,10 @@ func FindCollectionByOwner(user string, page, pageSize int64) (map[string]interf
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
-	totalPage := total/pageSize + 1
+	totalPage := total / pageSize
+	if total%pageSize != 0 {
+		totalPage++
+	}
 	opts := options.Find().SetSkip((page - 1) * pageSize).SetLimit(pageSize)
 	cursor, err := db.Collection("collections").Find(context.TODO(), bson.M{"user_address": user, "is_delete": 0}, opts)
 	if err != nil {
