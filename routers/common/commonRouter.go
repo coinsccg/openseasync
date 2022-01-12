@@ -8,6 +8,7 @@ import (
 	"openseasync/common/errorinfo"
 	"openseasync/logs"
 	"openseasync/models"
+	"strconv"
 )
 
 func HostManager(router *gin.RouterGroup) {
@@ -83,11 +84,28 @@ func OpenSeaOwnerCollectionsSync(c *gin.Context) {
 
 func GetAssetsByOwner(c *gin.Context) {
 	user := c.Param("user")
+	page := c.Query("page")
+	pageSize := c.Query("pageSize")
 	if len(user) != 42 {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	assets, err := getAssetByOwner(user)
+	pageInt, err := strconv.ParseInt(page, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	pageSizeInt, err := strconv.ParseInt(pageSize, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	if pageInt >= 1 && pageSizeInt >= 1 {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+
+	assets, err := getAssetByOwner(user, pageInt, pageSizeInt)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
@@ -98,11 +116,27 @@ func GetAssetsByOwner(c *gin.Context) {
 
 func GetCollectionsByOwner(c *gin.Context) {
 	user := c.Param("user")
+	page := c.Query("page")
+	pageSize := c.Query("pageSize")
 	if len(user) != 42 {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	collections, err := getCollectionsByOwner(user)
+	pageInt, err := strconv.ParseInt(page, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	pageSizeInt, err := strconv.ParseInt(pageSize, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	if pageInt >= 1 && pageSizeInt >= 1 {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	collections, err := getCollectionsByOwner(user, pageInt, pageSizeInt)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
@@ -114,11 +148,27 @@ func GetCollectionsByOwner(c *gin.Context) {
 func GetAssetsBySlug(c *gin.Context) {
 	user := c.Param("user")
 	slug := c.Param("slug")
+	page := c.Query("page")
+	pageSize := c.Query("pageSize")
 	if len(user) != 42 && slug != "" {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	assets, err := getAssetBySlug(user, slug)
+	pageInt, err := strconv.ParseInt(page, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	pageSizeInt, err := strconv.ParseInt(pageSize, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	if pageInt >= 1 && pageSizeInt >= 1 {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	assets, err := getAssetBySlug(user, slug, pageInt, pageSizeInt)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))

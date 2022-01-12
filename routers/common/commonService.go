@@ -79,8 +79,8 @@ func openSeaOwnerCollectionsSync(user string) error {
 }
 
 // getAssetByOwner get assets by owner
-func getAssetByOwner(user string) ([]map[string]interface{}, error) {
-	assets, err := models.FindAssetByOwner(user)
+func getAssetByOwner(user string, page, pageSize int64) (map[string]interface{}, error) {
+	assets, err := models.FindAssetByOwner(user, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -89,8 +89,8 @@ func getAssetByOwner(user string) ([]map[string]interface{}, error) {
 }
 
 // getAssetBySlug get assets by owner
-func getAssetBySlug(user, slug string) ([]*models.Asset, error) {
-	assets, err := models.FindWorksBySlug(user, slug)
+func getAssetBySlug(user, slug string, page, pageSize int64) ([]*models.Asset, error) {
+	assets, err := models.FindWorksBySlug(user, slug, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -99,8 +99,8 @@ func getAssetBySlug(user, slug string) ([]*models.Asset, error) {
 }
 
 // getCollectionsByOwner get collection by owner
-func getCollectionsByOwner(user string) ([]*models.Collection, error) {
-	collections, err := models.FindCollectionByOwner(user)
+func getCollectionsByOwner(user string, page, pageSize int64) (map[string]interface{}, error) {
+	collections, err := models.FindCollectionByOwner(user, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
