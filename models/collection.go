@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"errors"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"openseasync/database"
@@ -77,7 +78,7 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 }
 
 // FindCollectionByOwner find collections by owner
-func FindCollectionByOwner(usermetamaskid string, page, pageSize int64) (map[string]interface{}, error) {
+func FindCollectionByUserMetamaskID(usermetamaskid string, page, pageSize int64) (map[string]interface{}, error) {
 	var (
 		collections []bson.M
 		result      = make(map[string]interface{})
@@ -107,13 +108,12 @@ func FindCollectionByOwner(usermetamaskid string, page, pageSize int64) (map[str
 			"$addFields", bson.M{"user_item": bson.M{"$arrayElemAt": bson.A{"$user_item", 0}}},
 		}},
 		{{
-			"$addFields", bson.M{"userName": "$user_item.userName", "userImgURL": "$user_item.userImgURL"},
+			"$addFields", bson.M{"userId": "$user_item.id", "userName": "$user_item.userName", "userImgURL": "$user_item.userImgURL"},
 		}},
 		{{"$project",
 			bson.M{
-				"id": 1, "userId": 1, "userMetamaskId": 1, "userCoverUrl": 1, "avatarUrl": 1, "userName": 1,
-				"itemsCount": 1, "ownersCount": 1, "floorPrice": 1, "highestPrice": 1, "collectionName": 1, "likesCount": 1,
-				"viewsCount": 1, "description": 1,
+				"id": 1, "userId": 1, "userMetamaskId": 1, "coverImageUrl ": 1, "avatarUrl": 1, "userName": 1,
+				"collectionName": 1, "description": 1,
 			},
 		}},
 	}
@@ -133,14 +133,14 @@ func FindCollectionByOwner(usermetamaskid string, page, pageSize int64) (map[str
 	return result, nil
 }
 
-// FindCollectionBySlug find collections by slug
-func FindCollectionBySlug(collectionId string, page, pageSize int64) (map[string]interface{}, error) {
+// FindCollectionByCollectionID find collections by collectionId
+func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (map[string]interface{}, error) {
 	var (
 		collections []bson.M
 		result      = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
-	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"slug": collectionId, "is_delete": 0})
+	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"id": collectionId, "is_delete": 0})
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -149,9 +149,9 @@ func FindCollectionBySlug(collectionId string, page, pageSize int64) (map[string
 	if total%pageSize != 0 {
 		totalPage++
 	}
-
+	fmt.Println(total)
 	pipe := mongo.Pipeline{
-		{{"$match", bson.M{"slug": collectionId, "is_delete": 0}}},
+		{{"$match", bson.M{"id": collectionId, "is_delete": 0}}},
 		{{"$skip", (page - 1) * pageSize}},
 		{{"$limit", pageSize}},
 		{{"$lookup", bson.M{
@@ -164,7 +164,7 @@ func FindCollectionBySlug(collectionId string, page, pageSize int64) (map[string
 			"$addFields", bson.M{"user_item": bson.M{"$arrayElemAt": bson.A{"$user_item", 0}}},
 		}},
 		{{
-			"$addFields", bson.M{"userName": "$user_item.userName", "userImgURL": "$user_item.userImgURL"},
+			"$addFields", bson.M{"userId": "$user_item.id", "userName": "$user_item.userName", "userImgURL": "$user_item.userImgURL"},
 		}},
 		{{"$project",
 			bson.M{"id": 1, "userId": 1, "userMetamaskId": 1, "userCoverUrl": 1, "avatarUrl": 1, "userName": 1,

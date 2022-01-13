@@ -17,7 +17,7 @@ func HostManager(router *gin.RouterGroup) {
 	//router.GET(constants.URL_OPENSEA_OWNER_ASSETS, OpenSeaOwnerAssetsSync)
 	//router.GET(constants.URL_OPENSEA_OWNER_Collections, OpenSeaOwnerCollectionsSync)
 	router.GET(constants.URL_FIND_ASSET, GetAssetsByOwner)
-	router.GET(constants.URL_FIND_COLLECTION_USERMETAMASKID, GetCollectionsByOwner)
+	router.GET(constants.URL_FIND_COLLECTION_USERMETAMASKID, GetCollectionsByUserMetamaskID)
 	router.GET(constants.URL_FIND_COLLECTION_COLLECTIONID, GetCollectionsByCollectionID)
 	router.GET(constants.URL_FIND_COLLECTION_ITEM_ACTIVITY_COLLECTIONID, GetItemActivityByCollectionID)
 	router.GET(constants.URL_FIND_ASSETS_SLUG, GetAssetsBySlug)
@@ -87,7 +87,7 @@ func GetAssetsByOwner(c *gin.Context) {
 	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], result["metadata"]))
 }
 
-func GetCollectionsByOwner(c *gin.Context) {
+func GetCollectionsByUserMetamaskID(c *gin.Context) {
 	usermetamaskid := c.Param("usermetamaskid")
 	page := c.Query("page")
 	pageSize := c.Query("pageSize")
@@ -109,7 +109,7 @@ func GetCollectionsByOwner(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	result, err := getCollectionsByOwner(usermetamaskid, pageInt, pageSizeInt)
+	result, err := getCollectionsByUserMetamaskID(usermetamaskid, pageInt, pageSizeInt)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
@@ -140,7 +140,7 @@ func GetCollectionsByCollectionID(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	result, err := getCollectionsBySlug(collectionId, pageInt, pageSizeInt)
+	result, err := getCollectionsByCollectionID(collectionId, pageInt, pageSizeInt)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))

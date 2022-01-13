@@ -156,6 +156,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 
 		// insert user
 		var userModel = User{
+			Id:             0,
 			UserMetamaskID: user,
 			Username:       v.Owner.User.Username,
 			UserImgURL:     v.Owner.ProfileImgURL,

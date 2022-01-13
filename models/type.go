@@ -3,6 +3,7 @@ package models
 import "math/big"
 
 type User struct {
+	Id             int    `json:"id" bson:"id"`                         // 用户 ID
 	UserMetamaskID string `json:"userMetamaskId" bson:"userMetamaskId"` // 用户地址
 	Username       string `json:"userName" bson:"userName"`             // 用户头像
 	UserImgURL     string `json:"userImgURL" bson:"userImgURL"`         // 用户头像
@@ -44,11 +45,12 @@ type Collection struct {
 	BannerImageURL string `json:"banner_image_url" bson:"banner_image_url"` // 集合背景图
 	Description    string `json:"description" bson:"description"`           // 集合描述
 	ImageURL       string `json:"image_url" bson:"image_url"`               // 集合头像
-	AvatarUrl      string `json:"avatarUrl" bson:"avatarUrl"`               // 集合头像
-	LargeImageURL  string `json:"large_image_url" bson:"large_image_url"`   // 头像大图
-	IsDelete       int8   `json:"is_delete" bson:"is_delete"`               // 是否删除 1删除 0未删除 默认为0
-	CreateDate     string `json:"create_date" bson:"create_date"`           // 集合创建时间
-	RefreshTime    int    `json:"refresh_time" bson:"refresh_time"`         // 刷新时间
+	AvatarUrl      string `json:"avatarUrl" bson:"avatarUrl"`
+	CoverImageUrl  string `json:"coverImageUrl " bson:"coverImageUrl "`
+	LargeImageURL  string `json:"large_image_url" bson:"large_image_url"` // 头像大图
+	IsDelete       int8   `json:"is_delete" bson:"is_delete"`             // 是否删除 1删除 0未删除 默认为0
+	CreateDate     string `json:"create_date" bson:"create_date"`         // 集合创建时间
+	RefreshTime    int    `json:"refresh_time" bson:"refresh_time"`       // 刷新时间
 	//NumOwners      int     `json:"num_owners" bson:"num_owners"`             // 集合中属于自己的NFT个数
 	ItemsCount   int     `json:"itemsCount" bson:"itemsCount"`     // 集合中NFT总数
 	TotalVolume  float64 `json:"total_volume" bson:"total_volume"` // 交易量
