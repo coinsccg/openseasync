@@ -381,6 +381,7 @@ func insertTransaction(db *mongo.Database, user, contractAddress, tokenId string
 			CollectibleId:    v.Asset.ID,
 			CollectibleName:  v.Asset.Name,
 			CollectionId:     v.CollectionSlug,
+			CollectionName:   v.Asset.Collection.Name,
 			ContractAddress:  contractAddress,
 			TokenId:          tokenId,
 			BidAmount:        v.BidAmount,

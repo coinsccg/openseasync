@@ -149,7 +149,7 @@ type ItemActivity struct {
 	CollectibleId    int              `json:"collectibleId" bson:"collectibleId"`     // NFT id
 	CollectibleName  string           `json:"collectibleName" bson:"collectibleName"` // NFT 名字
 	CollectionId     string           `json:"collectionId" bson:"collectionId"`       // 集合ID
-	CollectionName   string           `json:"collection_name" bson:"collection_name"` // 集合名
+	CollectionName   string           `json:"collectionName" bson:"collectionName"`   // 集合名
 	ContractAddress  string           `json:"contract_address" bson:"contract_address"`
 	TokenId          string           `json:"token_id" bson:"token_id"`
 	BidAmount        string           `json:"bid_amount" bson:"bid_amount"` // 投标金额
