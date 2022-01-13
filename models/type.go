@@ -154,7 +154,8 @@ type ItemActivity struct {
 	TokenId          string           `json:"token_id" bson:"token_id"`
 	BidAmount        string           `json:"bid_amount" bson:"bid_amount"` // 投标金额
 	CreateDate       string           `json:"create_date" bson:"create_date"`
-	Price            string           `json:"Price" bson:"Price"`                           // 成交价格
+	Price            string           `json:"price" bson:"price"`                           // 成交价格ETH
+	PriceInUsd       string           `json:"priceInUsd " bson:"priceInUsd "`               // 成交价格USD
 	SellerId         int              `json:"sellerId" bson:"sellerId"`                     // 售卖者ID
 	SellerMetamaskId string           `json:"sellerMetamaskId" bson:"sellerMetamaskId"`     // 售卖者地址
 	SellerName       string           `json:"sellerName" bson:"sellerName"`                 // 售卖者名字
@@ -715,7 +716,7 @@ type AutoEvent struct {
 		Name     interface{} `json:"name"`
 		Decimals int         `json:"decimals"`
 		EthPrice string      `json:"eth_price"`
-		UsdPrice string      `json:"usd_price"`
+		UsdPrice interface{} `json:"usd_price"`
 	} `json:"payment_token"`
 	Quantity string `json:"quantity"`
 	Seller   struct {

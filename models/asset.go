@@ -6,9 +6,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"math"
+	"math/big"
 	"openseasync/common/utils"
 	"openseasync/database"
 	"openseasync/logs"
+	"strconv"
 	"time"
 )
 
@@ -392,13 +395,23 @@ func insertTransaction(db *mongo.Database, user, contractAddress, tokenId string
 			TradeType:        v.EventType,
 			Quantity:         v.Quantity,
 			Transaction:      v.Transaction,
-			PayTokenContract: PayTokenContract{
+		}
+
+		if v.PaymentToken.UsdPrice != nil {
+			itemActivity.PayTokenContract = PayTokenContract{
 				Symbol:   v.PaymentToken.Symbol,
 				ImageURL: v.PaymentToken.ImageURL,
 				EthPrice: v.PaymentToken.EthPrice,
-				UsdPrice: v.PaymentToken.UsdPrice,
-			},
+				UsdPrice: v.PaymentToken.UsdPrice.(string),
+			}
+			usdPrice, _ := strconv.ParseFloat(v.PaymentToken.UsdPrice.(string), 64)
+			price, _ := strconv.ParseFloat(v.TotalPrice, 64)
+			n := new(big.Int)
+			n.Mul(big.NewInt(int64(usdPrice)), big.NewInt(int64(price)))
+			n.Div(n, big.NewInt(int64(math.Pow10(18))))
+			itemActivity.PriceInUsd = n.String()
 		}
+
 		count, err := db.Collection("item_activitys").CountDocuments(
 			context.TODO(),
 			bson.M{"id": v.ID, "contract_address": contractAddress, "token_id": tokenId, "is_delete": 0})
