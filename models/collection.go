@@ -109,7 +109,13 @@ func FindCollectionByOwner(usermetamaskid string, page, pageSize int64) (map[str
 		{{
 			"$addFields", bson.M{"userName": "$user_item.userName", "userImgURL": "$user_item.userImgURL"},
 		}},
-		{{"$project", bson.M{"_id": 0, "user_item": 0}}},
+		{{"$project",
+			bson.M{
+				"id": 1, "userId": 1, "userMetamaskId": 1, "userCoverUrl": 1, "avatarUrl": 1, "userName": 1,
+				"itemsCount": 1, "ownersCount": 1, "floorPrice": 1, "highestPrice": 1, "collectionName": 1, "likesCount": 1,
+				"viewsCount": 1, "description": 1,
+			},
+		}},
 	}
 	cursor, err := db.Collection("collections").Aggregate(context.TODO(), pipe)
 	if err != nil {
@@ -160,7 +166,10 @@ func FindCollectionBySlug(collectionId string, page, pageSize int64) (map[string
 		{{
 			"$addFields", bson.M{"userName": "$user_item.userName", "userImgURL": "$user_item.userImgURL"},
 		}},
-		{{"$project", bson.M{"_id": 0, "user_item": 0}}},
+		{{"$project",
+			bson.M{"id": 1, "userId": 1, "userMetamaskId": 1, "userCoverUrl": 1, "avatarUrl": 1, "userName": 1,
+				"itemsCount": 1, "ownersCount": 1, "floorPrice": 1, "highestPrice": 1, "collectionName": 1, "likesCount": 1,
+				"viewsCount": 1, "description": 1}}},
 	}
 	cursor, err := db.Collection("collections").Aggregate(context.TODO(), pipe)
 	if err != nil {
