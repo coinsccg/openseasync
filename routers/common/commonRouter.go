@@ -20,9 +20,9 @@ func HostManager(router *gin.RouterGroup) {
 	router.GET(constants.URL_FIND_COLLECTION_USERMETAMASKID, GetCollectionsByUserMetamaskID)
 	router.GET(constants.URL_FIND_COLLECTION_COLLECTIONID, GetCollectionsByCollectionID)
 	router.GET(constants.URL_FIND_COLLECTION_ITEM_ACTIVITY_COLLECTIONID, GetItemActivityByCollectionID)
-	router.GET(constants.URL_FIND_ASSETS_SLUG, GetAssetsBySlug)
+	router.GET(constants.URL_FIND_ASSETS_SLUG, GetAssetsByCollectionId)
 	router.DELETE(constants.URL_DELETE_ASSET, DeleteAssetByTokenID)
-	router.DELETE(constants.URL_DELETE_COLLECTION, DeleteCollectionBySlug)
+	router.DELETE(constants.URL_DELETE_COLLECTION, DeleteCollectionByCollectionId)
 
 }
 
@@ -180,7 +180,7 @@ func GetItemActivityByCollectionID(c *gin.Context) {
 	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], result["metadata"]))
 }
 
-func GetAssetsBySlug(c *gin.Context) {
+func GetAssetsByCollectionId(c *gin.Context) {
 	user := c.Param("user")
 	slug := c.Param("slug")
 	page := c.Query("page")
@@ -203,7 +203,7 @@ func GetAssetsBySlug(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	result, err := getAssetBySlug(user, slug, pageInt, pageSizeInt)
+	result, err := getAssetByCollectionId(user, slug, pageInt, pageSizeInt)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
@@ -230,14 +230,14 @@ func DeleteAssetByTokenID(c *gin.Context) {
 	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil, nil))
 }
 
-func DeleteCollectionBySlug(c *gin.Context) {
+func DeleteCollectionByCollectionId(c *gin.Context) {
 	user := c.Param("user")
 	slug := c.Param("slug")
 	if len(user) != 42 && slug != "" {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	err := deleteCollectionBySlug(user, slug)
+	err := deleteCollectionByCollectionId(user, slug)
 	if err == models.CONNOT_DELETE_COLLECTION_ERR {
 		c.JSON(http.StatusOK, common.CreateErrorResponse(errorinfo.UPDATE_DATA_TO_DB_ERROR_CODE, err.Error()))
 		return

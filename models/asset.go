@@ -29,8 +29,8 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 				UserMetamaskID:    user,
 				Name:              v.Name,
 				CoverImageUrl:     v.ImageURL,
-				CoverPreviewURL:   v.ImagePreviewURL,
-				CoverThumbnailURL: v.ImageThumbnailURL,
+				CoverPreviewUrl:   v.ImagePreviewURL,
+				CoverThumbnailUrl: v.ImageThumbnailURL,
 				Description:       v.Description,
 				ContractAddress:   v.AssetContract.Address,
 				TokenId:           v.TokenID,
@@ -40,7 +40,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 				OwnerImgURL:       v.Owner.ProfileImgURL,
 				Creator:           v.Creator.Address,
 				CreatorName:       v.Creator.User.Username,
-				CreatorImgURL:     v.Creator.ProfileImgURL,
+				CreatorImgUrl:     v.Creator.ProfileImgURL,
 				CollectionID:      v.Collection.Slug,
 				TokenMetadata:     v.TokenMetadata,
 				RefreshTime:       refreshTime,
@@ -105,7 +105,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 				ContractAddress: v.AssetContract.Address,
 				TokenId:         v.TokenID,
 				Owner:           v2.Owner.Address,
-				ProfileImgURL:   v2.Owner.ProfileImgURL,
+				ProfileImgUrl:   v2.Owner.ProfileImgURL,
 				Quantity:        v2.Quantity,
 				RefreshTime:     refreshTime,
 			}
@@ -153,11 +153,11 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 			Id:             0,
 			UserMetamaskID: user,
 			Username:       v.Owner.User.Username,
-			UserImgURL:     v.Owner.ProfileImgURL,
+			AvatarUrl:      v.Owner.ProfileImgURL,
 		}
 		if v.Owner.Address == ZeroAddress && user == v.Creator.Address {
 			userModel.Username = v.Creator.User.Username
-			userModel.UserImgURL = v.Creator.ProfileImgURL
+			userModel.AvatarUrl = v.Creator.ProfileImgURL
 		}
 		if err := insertUsers(db, user, userModel); err != nil {
 			logs.GetLogger().Error(err)
@@ -384,7 +384,7 @@ func insertTransaction(db *mongo.Database, user, contractAddress, tokenId string
 			Price:            v.TotalPrice,
 			SellerMetamaskId: v.Seller.Address,
 			SellerName:       v.Seller.User.Username,
-			SellerImgURL:     v.Seller.ProfileImgURL,
+			SellerImgUrl:     v.Seller.ProfileImgURL,
 			BuyerMetamaskId:  v.WinnerAccount.Address,
 			BuyerName:        v.WinnerAccount.User.Username,
 			BuyerImgURL:      v.WinnerAccount.ProfileImgURL,
@@ -466,11 +466,11 @@ func insertOrders(db *mongo.Database, contractAddress, tokenId string, autoAsset
 		orders.Metadata.Quantity = v.Metadata.Asset.Quantity
 		orders.Metadata.Schema = v.Metadata.Schema
 		orders.Maker.UserName = v.Maker.User.Username
-		orders.Maker.ProfileImgURL = v.Maker.ProfileImgURL
+		orders.Maker.ProfileImgUrl = v.Maker.ProfileImgURL
 		orders.Maker.Address = v.Maker.Address
 		orders.Taker.UserName = v.Taker.User.Username
 		orders.Taker.Address = v.Taker.Address
-		orders.Taker.ProfileImgURL = v.Taker.ProfileImgURL
+		orders.Taker.ProfileImgUrl = v.Taker.ProfileImgURL
 		orders.PayTokenContract.Symbol = v.PaymentTokenContract.Symbol
 		orders.PayTokenContract.ImageURL = v.PaymentTokenContract.ImageURL
 		orders.PayTokenContract.EthPrice = v.PaymentTokenContract.EthPrice
@@ -528,7 +528,7 @@ func insertUsers(db *mongo.Database, userAddress string, user User) error {
 		if _, err = db.Collection("users").UpdateOne(
 			context.TODO(),
 			bson.M{"userMetamaskId": userAddress},
-			bson.M{"$set": bson.M{"userName": user.Username, "userImgURL": user.UserImgURL}}); err != nil {
+			bson.M{"$set": bson.M{"userName": user.Username, "avatarUrl": user.AvatarUrl}}); err != nil {
 			logs.GetLogger().Error(err)
 			return err
 		}

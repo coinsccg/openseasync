@@ -23,9 +23,9 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 			UserMetamaskID:     user,
 			CollectionName:     v.Name,
 			Description:        v.Description,
-			BannerImageURL:     v.BannerImageURL,
+			BannerImageUrl:     v.BannerImageURL,
 			CoverImageUrl:      v.ImageURL,
-			CoverLargeImageURL: v.LargeImageURL,
+			CoverLargeImageUrl: v.LargeImageURL,
 			CreateDate:         v.CreatedDate,
 			RefreshTime:        refreshTime,
 			OwnersCount:        v.Stats.NumOwners,
@@ -108,7 +108,7 @@ func FindCollectionByUserMetamaskID(usermetamaskid string, page, pageSize int64)
 			"$addFields", bson.M{"user_item": bson.M{"$arrayElemAt": bson.A{"$user_item", 0}}},
 		}},
 		{{
-			"$addFields", bson.M{"userId": "$user_item.id", "userName": "$user_item.userName", "userImgURL": "$user_item.userImgURL"},
+			"$addFields", bson.M{"userId": "$user_item.id", "userName": "$user_item.userName", "avatarUrl": "$user_item.avatarUrl"},
 		}},
 		{{"$project",
 			bson.M{
@@ -164,7 +164,7 @@ func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (ma
 			"$addFields", bson.M{"user_item": bson.M{"$arrayElemAt": bson.A{"$user_item", 0}}},
 		}},
 		{{
-			"$addFields", bson.M{"userId": "$user_item.id", "userName": "$user_item.userName", "userImgURL": "$user_item.userImgURL"},
+			"$addFields", bson.M{"userId": "$user_item.id", "userName": "$user_item.userName", "avatarUrl": "$user_item.avatarUrl"},
 		}},
 		{{"$project",
 			bson.M{"id": 1, "userId": 1, "userMetamaskId": 1, "userCoverUrl": 1, "avatarUrl": 1, "userName": 1,
@@ -187,11 +187,11 @@ func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (ma
 	return result, nil
 }
 
-// DeleteCollectionBySlug delete empty collection
-func DeleteCollectionBySlug(user, slug string) error {
+// DeleteCollectionByCollectionId delete empty collection
+func DeleteCollectionByCollectionId(user, slug string) error {
 	db := database.GetMongoClient()
 	row, err := db.Collection("assets").CountDocuments(
-		context.TODO(), bson.M{"userMetamaskId": user, "slug": slug, "is_delete": 0})
+		context.TODO(), bson.M{"userMetamaskId": user, "collectionId": slug, "is_delete": 0})
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return err

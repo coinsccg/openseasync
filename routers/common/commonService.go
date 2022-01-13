@@ -88,8 +88,8 @@ func getAssetByOwner(user string, page, pageSize int64) (map[string]interface{},
 	return result, nil
 }
 
-// getAssetBySlug get assets by owner
-func getAssetBySlug(user, slug string, page, pageSize int64) (map[string]interface{}, error) {
+// getAssetByCollectionId get assets by owner
+func getAssetByCollectionId(user, slug string, page, pageSize int64) (map[string]interface{}, error) {
 	result, err := models.FindAssetByOwner(user, slug, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)
@@ -137,9 +137,9 @@ func deleteAssetByTokenID(user, contractAddress, tokenID string) error {
 	return nil
 }
 
-// deleteCollectionBySlug delete collection
-func deleteCollectionBySlug(user, slug string) error {
-	if err := models.DeleteCollectionBySlug(user, slug); err != nil {
+// deleteCollectionByCollectionId delete collection
+func deleteCollectionByCollectionId(user, slug string) error {
+	if err := models.DeleteCollectionByCollectionId(user, slug); err != nil {
 		logs.GetLogger().Error(err)
 		return err
 	}
