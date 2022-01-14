@@ -38,7 +38,7 @@ const (
 	URL_HOST_GET_COMMON                            = "/public"
 	URL_HOST_GET_HOST_INFO                         = "/host/info"
 	URL_OPENSEA_OWNER_ASSETS_SYNC                  = "/opensea/sync/:user"
-	URL_FIND_ASSET                                 = "/assets/:user"
+	URL_FIND_ASSETS_COLLETION_SEARCH               = "/search/singleCollectibles/:collectionId"
 	URL_FIND_COLLECTION_USERMETAMASKID             = "/collectionsByUserId/:usermetamaskid"
 	URL_FIND_COLLECTION_COLLECTIONID               = "/collection/getInfo/:collectionId"
 	URL_FIND_COLLECTION_ITEM_ACTIVITY_COLLECTIONID = "/collection/getItemActivities/:collectionId"

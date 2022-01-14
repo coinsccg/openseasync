@@ -48,7 +48,6 @@ type Asset struct {
 	RefreshTime int    `json:"refreshTime" bson:"refreshTime"` // 刷新时间
 	CreateDate  string `json:"createDate" bson:"createDate"`   // 创建时间
 	EndTime     string `json:"endTime" bson:"endTime"`         // 结束时间
-
 }
 
 type Collection struct {
@@ -774,4 +773,14 @@ type AutoEvent struct {
 		Config        string `json:"config"`
 	} `json:"winner_account"`
 	ListingTime string `json:"listing_time"`
+}
+
+type Params struct {
+	Page     int64   `form:"page" binding:"numeric,min=1"`
+	PageSize int64   `form:"pageSize" binding:"numeric,min=1"`
+	Status   int64   `form:"status" binding:"oneof=0 1"`
+	SortBy   int64   `form:"sortBy" binding:"oneof=0 1 2 3 4 5 6"`
+	MinPrice float64 `form:"minPrice" binding:"numeric,min=0"`
+	MaxPrice float64 `form:"maxPrice" binding:"numeric,min=0"`
+	Field    string  `form:"field" binding:"required"`
 }

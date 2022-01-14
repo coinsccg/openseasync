@@ -75,6 +75,9 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 		}
 		asset.Traits = traits
 		if v.SellOrders != nil {
+			asset.Price = v.SellOrders[0].CurrentPrice
+			asset.CreateDate = v.SellOrders[0].CreatedDate
+			asset.EndTime = v.SellOrders[0].ClosingDate
 			asset.SellOrders.CreateDate = v.SellOrders[0].CreatedDate
 			asset.SellOrders.ClosingDate = v.SellOrders[0].ClosingDate
 			asset.SellOrders.CurrentPrice = v.SellOrders[0].CurrentPrice
@@ -194,29 +197,42 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 }
 
 // FindAssetByOwner find assets by owner
-func FindAssetByOwner(user string, collectionId interface{}, page, pageSize int64) (map[string]interface{}, error) {
+func FindAssetByOwner(collectionId string, param Params) (map[string]interface{}, error) {
 	var (
-		assets     []*Asset
-		assetsList []map[string]interface{}
-		result     = make(map[string]interface{})
+		assets []*Asset
+		result = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
 
-	condition := bson.M{"userMetamaskId": user, "isDelete": 0}
-	if collectionId != nil {
-		condition["collectionId"] = collectionId
-	}
+	condition := bson.M{"collectionId": collectionId, "price": bson.M{"$gte": param.MinPrice, "$lte": param.MinPrice}, "status": param.Status}
 
 	total, err := db.Collection("assets").CountDocuments(context.TODO(), condition)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
-	totalPage := total / pageSize
-	if total%pageSize != 0 {
+	totalPage := total / param.PageSize
+	if total%param.PageSize != 0 {
 		totalPage++
 	}
-	opts := options.Find().SetSkip((page - 1) * pageSize).SetLimit(pageSize)
+	var sort bson.M
+	switch param.SortBy {
+	case 0:
+		sort = bson.M{"createDate": -1}
+	case 1:
+		sort = bson.M{"createDate": 1}
+	case 2:
+		sort = bson.M{"price": 1}
+	case 3:
+		sort = bson.M{"price": -1}
+	case 4:
+		sort = bson.M{"viewCounts": -1}
+	case 5:
+		sort = bson.M{"viewCounts": 1}
+	case 6:
+		sort = bson.M{"endTime": -1}
+	}
+	opts := options.Find().SetSort(sort).SetSkip((param.Page - 1) * param.PageSize).SetLimit(param.PageSize)
 	cursor, err := db.Collection("assets").Find(context.TODO(), condition, opts)
 	if err != nil {
 		logs.GetLogger().Error(err)
@@ -227,69 +243,8 @@ func FindAssetByOwner(user string, collectionId interface{}, page, pageSize int6
 		return nil, err
 	}
 
-	for _, v := range assets {
-		var (
-			collection    Collection
-			contract      Contract
-			itemActivitys []ItemActivity
-			orders        []Orders
-			data          map[string]interface{}
-		)
-		err = db.Collection("collections").FindOne(
-			context.TODO(), bson.M{"userMetamaskId": user, "id": v.CollectionID}).Decode(&collection)
-		if err != nil {
-			logs.GetLogger().Error(err)
-			return nil, err
-		}
-
-		err = db.Collection("contracts").FindOne(
-			context.TODO(), bson.M{"address": v.ContractAddress}).Decode(&contract)
-		if err != nil {
-			logs.GetLogger().Error(err)
-			return nil, err
-		}
-
-		cursor, err := db.Collection("item_activitys").Find(
-			context.TODO(), bson.M{"userMetamaskId": user, "contractAddress": v.ContractAddress, "tokenId": v.TokenId, "isDelete": 0})
-		if err != nil {
-			logs.GetLogger().Error(err)
-			return nil, err
-		}
-		if err = cursor.All(context.TODO(), &itemActivitys); err != nil {
-			logs.GetLogger().Error(err)
-			return nil, err
-		}
-
-		cursor, err = db.Collection("orders").Find(
-			context.TODO(), bson.M{"contractAddress": v.ContractAddress, "tokenId": v.TokenId, "isDelete": 0})
-		if err != nil {
-			logs.GetLogger().Error(err)
-			return nil, err
-		}
-		if err = cursor.All(context.TODO(), &orders); err != nil {
-			logs.GetLogger().Error(err)
-			return nil, err
-		}
-
-		bytes, err := json.Marshal(v)
-		if err != nil {
-			logs.GetLogger().Error(err)
-			return nil, err
-		}
-		if err = json.Unmarshal(bytes, &data); err != nil {
-			logs.GetLogger().Error(err)
-			return nil, err
-		}
-
-		data["contract"] = contract
-		data["collection"] = collection
-		data["item_activitys"] = itemActivitys
-		data["orders"] = orders
-		assetsList = append(assetsList, data)
-	}
-
-	result["data"] = assetsList
-	result["metadata"] = map[string]int64{"page": page, "pageSize": pageSize, "total": total, "totalPage": totalPage}
+	result["data"] = assets
+	result["metadata"] = map[string]int64{"page": param.Page, "pageSize": param.PageSize, "total": total, "totalPage": totalPage}
 
 	return result, nil
 }
