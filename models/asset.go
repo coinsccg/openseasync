@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	uuid2 "github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -26,19 +27,20 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 
 		var (
 			asset = Asset{
+				Id:                v.ID,
 				UserMetamaskID:    user,
 				Name:              v.Name,
 				CoverImageUrl:     v.ImageURL,
 				CoverPreviewUrl:   v.ImagePreviewURL,
-				CoverThumbnailUrl: v.ImageThumbnailURL,
+				ThumbnailUrl:      v.ImageThumbnailURL,
 				Description:       v.Description,
 				ContractAddress:   v.AssetContract.Address,
 				TokenId:           v.TokenID,
 				NumSales:          v.NumSales,
-				Owner:             v.Owner.Address,
+				OwnerMetamaskId:   v.Owner.Address,
 				OwnerName:         v.Owner.User.Username,
 				OwnerImgURL:       v.Owner.ProfileImgURL,
-				Creator:           v.Creator.Address,
+				CreatorMetamaskId: v.Creator.Address,
 				CreatorName:       v.Creator.User.Username,
 				CreatorImgUrl:     v.Creator.ProfileImgURL,
 				CollectionID:      v.Collection.Slug,
@@ -76,7 +78,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 		asset.Traits = traits
 		if v.SellOrders != nil {
 			asset.Price = v.SellOrders[0].CurrentPrice
-			asset.CreateDate = v.SellOrders[0].CreatedDate
+			asset.StartTime = v.SellOrders[0].CreatedDate
 			asset.EndTime = v.SellOrders[0].ClosingDate
 			asset.SellOrders.CreateDate = v.SellOrders[0].CreatedDate
 			asset.SellOrders.ClosingDate = v.SellOrders[0].ClosingDate
@@ -152,11 +154,16 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 		}
 
 		// insert user
+		uuid, _ := uuid2.NewUUID()
+
 		var userModel = User{
-			Id:             0,
-			UserMetamaskID: user,
-			Username:       v.Owner.User.Username,
-			AvatarUrl:      v.Owner.ProfileImgURL,
+			Id:               uuid.String(),
+			UserMetamaskID:   user,
+			Username:         v.Owner.User.Username,
+			AvatarUrl:        v.Owner.ProfileImgURL,
+			PersonalPageLink: v.ExternalLink,
+			DiscordLink:      v.Collection.DiscordURL,
+			TelegramLink:     v.Collection.TelegramURL,
 		}
 		if v.Owner.Address == ZeroAddress && user == v.Creator.Address {
 			userModel.Username = v.Creator.User.Username
@@ -168,7 +175,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 		}
 
 		// insert order
-		if err := insertOrders(db, v.AssetContract.Address, v.TokenID, autoAsset); err != nil {
+		if err := insertOrders(db, v.ID, autoAsset); err != nil {
 			logs.GetLogger().Error(err)
 			return err
 		}
@@ -181,7 +188,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 
 		// insert transaction
 		time.Sleep(time.Second * 2)
-		if err := insertTransaction(db, user, v.AssetContract.Address, v.TokenID); err != nil {
+		if err := insertTransaction(db, v.AssetContract.Address, v.TokenID); err != nil {
 			logs.GetLogger().Error(err)
 			return err
 		}
@@ -199,22 +206,10 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string) error {
 // FindAssetByOwner find assets by owner
 func FindAssetByOwner(collectionId string, param Params) (map[string]interface{}, error) {
 	var (
-		assets []*Asset
+		assets []bson.M
 		result = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
-
-	condition := bson.M{"collectionId": collectionId, "price": bson.M{"$gte": param.MinPrice, "$lte": param.MinPrice}, "status": param.Status}
-
-	total, err := db.Collection("assets").CountDocuments(context.TODO(), condition)
-	if err != nil {
-		logs.GetLogger().Error(err)
-		return nil, err
-	}
-	totalPage := total / param.PageSize
-	if total%param.PageSize != 0 {
-		totalPage++
-	}
 	var sort bson.M
 	switch param.SortBy {
 	case 0:
@@ -232,9 +227,48 @@ func FindAssetByOwner(collectionId string, param Params) (map[string]interface{}
 	case 6:
 		sort = bson.M{"endTime": -1}
 	}
-	opts := options.Find().SetSort(sort).SetSkip((param.Page - 1) * param.PageSize).SetLimit(param.PageSize)
-	cursor, err := db.Collection("assets").Find(context.TODO(), condition, opts)
-	if err != nil {
+
+	cond := mongo.Pipeline{
+		{{"$match", bson.M{"collectionId": collectionId, "isDelete": 0}}},
+		{{
+			"$addFields", bson.M{"price": bson.M{"$cond": bson.M{
+				"if":   bson.M{"$ne": bson.A{"$price", ""}},
+				"then": bson.M{"$convert": bson.M{"input": "$price", "to": "double"}},
+				"else": 0,
+			},
+			}},
+		}},
+		{{"$match", bson.M{"price": bson.M{"$gte": param.MinPrice, "$lte": param.MaxPrice}}}},
+	}
+	cursor, err := db.Collection("assets").Aggregate(context.TODO(), cond)
+	if err != nil && err != mongo.ErrNoDocuments {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	total := int64(cursor.RemainingBatchLength())
+	totalPage := total / param.PageSize
+	if total%param.PageSize != 0 {
+		totalPage++
+	}
+	pipe := mongo.Pipeline{
+		{{"$sort", sort}},
+		{{"$skip", (param.Page - 1) * param.PageSize}},
+		{{"$limit", param.PageSize}},
+		{{"$project",
+			bson.M{
+				"_id": 0, "id": 1, "coverImageUrl": 1, "name": 1, "creatorId ": 1, "creatorMetamaskId": 1,
+				"creatorName": 1, "likesCount": 1, "viewsCount": 1, "numOfCopies": 1, "totalCopies": 1, "status": 1,
+				"ownerUserId": 1, "ownerMetamaskId": 1, "createDate": 1, "endTime": 1,
+				"price": bson.M{"$cond": bson.M{
+					"if":   bson.M{"$ne": bson.A{"$price", 0}},
+					"then": "$price",
+					"else": nil}},
+			},
+		}},
+	}
+	cond = append(cond, pipe...)
+	cursor, err = db.Collection("assets").Aggregate(context.TODO(), cond)
+	if err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
@@ -247,6 +281,76 @@ func FindAssetByOwner(collectionId string, param Params) (map[string]interface{}
 	result["metadata"] = map[string]int64{"page": param.Page, "pageSize": param.PageSize, "total": total, "totalPage": totalPage}
 
 	return result, nil
+}
+
+// FindAssetByGeneralInfoCollectibleId find assets by collectibleId
+func FindAssetByGeneralInfoCollectibleId(collectibleId int64) (map[string]interface{}, error) {
+	var (
+		assets []bson.M
+		result = make(map[string]interface{})
+	)
+	db := database.GetMongoClient()
+	opts := options.Find().SetProjection(
+		bson.D{
+			{"_id", 0},
+			{"id", 1},
+			{"collectibleName", 1},
+			{"collectionId", 1},
+			{"collectionName", 1},
+			{"creatorId ", 1},
+			{"creatorMetamaskId", 1},
+			{"creatorName", 1},
+			{"creatorPersonalSite", 1},
+			{"description", 1},
+			{"fileUrl", 1},
+			{"ownerId", 1},
+			{"ownerMetamaskId", 1},
+			{"ownerName", 1},
+			{"price", 1},
+			{"status", 1},
+			{"thumbnailUrl", 1},
+			{"tokenId", 1},
+			{"recordId", 1},
+			{"startTime", 1},
+			{"endTime", 1},
+		})
+	cursor, err := db.Collection("assets").Find(context.TODO(), bson.M{"id": collectibleId}, opts)
+	if err != nil && err != mongo.ErrNoDocuments {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &assets); err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+
+	result["data"] = assets
+	return result, nil
+}
+
+func FindAssetOfferRecordsByCollectibleId(collectibleId int64) ([]bson.M, error) {
+	var orders []bson.M
+	db := database.GetMongoClient()
+	opts := options.Find().SetProjection(
+		bson.D{
+			{"_id", 0},
+			{"id", 1},
+			{"auctionUserId", 1},
+			{"auctionMetamaskId", 1},
+			{"auctionUserName", 1},
+			{"price", 1},
+			{"bidTime", 1},
+		})
+	cursor, err := db.Collection("orders").Find(context.TODO(), bson.M{"collectibleId": collectibleId}, opts)
+	if err != nil && err != mongo.ErrNoDocuments {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &orders); err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return orders, nil
 }
 
 // DeleteAssetByTokenID delete asset by tokenId
@@ -311,7 +415,7 @@ func deleteAsset(db *mongo.Database, user string, refreshTime int) error {
 }
 
 // insert transaction
-func insertTransaction(db *mongo.Database, user, contractAddress, tokenId string) error {
+func insertTransaction(db *mongo.Database, contractAddress, tokenId string) error {
 	// If the number of requests is too many, a 429 error code will be thrown
 	resp, err := utils.RequestOpenSeaEvent(contractAddress, tokenId)
 	if err != nil {
@@ -400,32 +504,22 @@ func insertTransaction(db *mongo.Database, user, contractAddress, tokenId string
 }
 
 // insert orders
-func insertOrders(db *mongo.Database, contractAddress, tokenId string, autoAsset AutoAsset) error {
+func insertOrders(db *mongo.Database, collectibleId int, autoAsset AutoAsset) error {
 	for _, v := range autoAsset.Orders {
+		uuid, _ := uuid2.NewUUID()
 		var orders = Orders{
-			ContractAddress: contractAddress,
-			TokenId:         tokenId,
-			CreateDate:      v.CreatedDate,
-			ClosingDate:     v.ClosingDate,
-			ExpirationTime:  v.ExpirationTime,
-			ListingTime:     v.ListingTime,
-			OrderHash:       v.OrderHash,
-			CurrentPrice:    v.CurrentPrice,
-			CurrentBounty:   v.CurrentBounty,
-			BasePrice:       v.BasePrice,
-			PaymentToken:    v.PaymentToken,
-			Target:          v.Target,
+			Id:                v.OrderHash,
+			CollectibleId:     collectibleId,
+			CreateDate:        v.CreatedDate,
+			ClosingDate:       v.ClosingDate,
+			BidTime:           v.CreatedDate,
+			AuctionUserId:     uuid.String(),
+			AuctionMetamaskId: v.Maker.Address,
+			AuctionUserName:   v.Maker.User.Username,
+			CurrentBounty:     v.CurrentBounty,
+			Price:             v.CurrentPrice,
+			BasePrice:         v.BasePrice,
 		}
-		orders.Metadata.ID = v.Metadata.Asset.ID
-		orders.Metadata.Address = v.Metadata.Asset.Address
-		orders.Metadata.Quantity = v.Metadata.Asset.Quantity
-		orders.Metadata.Schema = v.Metadata.Schema
-		orders.Maker.UserName = v.Maker.User.Username
-		orders.Maker.ProfileImgUrl = v.Maker.ProfileImgURL
-		orders.Maker.Address = v.Maker.Address
-		orders.Taker.UserName = v.Taker.User.Username
-		orders.Taker.Address = v.Taker.Address
-		orders.Taker.ProfileImgUrl = v.Taker.ProfileImgURL
 		orders.PayTokenContract.Symbol = v.PaymentTokenContract.Symbol
 		orders.PayTokenContract.ImageURL = v.PaymentTokenContract.ImageURL
 		orders.PayTokenContract.EthPrice = v.PaymentTokenContract.EthPrice

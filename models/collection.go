@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"errors"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"openseasync/database"
@@ -85,7 +84,7 @@ func FindCollectionByUserMetamaskID(usermetamaskid string, page, pageSize int64)
 	)
 	db := database.GetMongoClient()
 	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"userMetamaskId": usermetamaskid, "isDelete": 0})
-	if err != nil {
+	if err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
@@ -112,13 +111,13 @@ func FindCollectionByUserMetamaskID(usermetamaskid string, page, pageSize int64)
 		}},
 		{{"$project",
 			bson.M{
-				"id": 1, "userId": 1, "userMetamaskId": 1, "coverImageUrl ": 1, "avatarUrl": 1, "userName": 1,
+				"_id": 0, "id": 1, "userId": 1, "userMetamaskId": 1, "coverImageUrl ": 1, "avatarUrl": 1, "userName": 1,
 				"collectionName": 1, "description": 1,
 			},
 		}},
 	}
 	cursor, err := db.Collection("collections").Aggregate(context.TODO(), pipe)
-	if err != nil {
+	if err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
@@ -141,7 +140,7 @@ func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (ma
 	)
 	db := database.GetMongoClient()
 	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"id": collectionId, "isDelete": 0})
-	if err != nil {
+	if err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
@@ -149,7 +148,6 @@ func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (ma
 	if total%pageSize != 0 {
 		totalPage++
 	}
-	fmt.Println(total)
 	pipe := mongo.Pipeline{
 		{{"$match", bson.M{"id": collectionId, "isDelete": 0}}},
 		{{"$skip", (page - 1) * pageSize}},
@@ -167,12 +165,12 @@ func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (ma
 			"$addFields", bson.M{"userId": "$user_item.id", "userName": "$user_item.userName", "avatarUrl": "$user_item.avatarUrl"},
 		}},
 		{{"$project",
-			bson.M{"id": 1, "userId": 1, "userMetamaskId": 1, "userCoverUrl": 1, "avatarUrl": 1, "userName": 1,
-				"itemsCount": 1, "ownersCount": 1, "floorPrice": 1, "highestPrice": 1, "collectionName": 1, "likesCount": 1,
-				"viewsCount": 1, "description": 1}}},
+			bson.M{"_id": 0, "id": 1, "userId": 1, "userMetamaskId": 1, "userCoverUrl": 1, "avatarUrl": 1,
+				"userName": 1, "itemsCount": 1, "ownersCount": 1, "floorPrice": 1, "highestPrice": 1,
+				"collectionName": 1, "likesCount": 1, "viewsCount": 1, "description": 1}}},
 	}
 	cursor, err := db.Collection("collections").Aggregate(context.TODO(), pipe)
-	if err != nil {
+	if err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
@@ -185,6 +183,17 @@ func FindCollectionByCollectionID(collectionId string, page, pageSize int64) (ma
 	result["metadata"] = map[string]int64{"page": page, "pageSize": pageSize, "total": total, "totalPage": totalPage}
 
 	return result, nil
+}
+
+// FindUserMediaByUserId find user media by userId
+func FindUserMediaByUserId(userId string) (bson.M, error) {
+	var user bson.M
+	db := database.GetMongoClient()
+	if err := db.Collection("users").FindOne(context.TODO(), bson.M{"id": userId}).Decode(&user); err != nil && err != mongo.ErrNoDocuments {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return user, nil
 }
 
 // DeleteCollectionByCollectionId delete empty collection

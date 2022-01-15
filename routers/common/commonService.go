@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/json"
+	"go.mongodb.org/mongo-driver/bson"
 	"openseasync/common"
 	"openseasync/common/utils"
 	"openseasync/logs"
@@ -88,6 +89,16 @@ func getAssetByOwner(collectionId string, param models.Params) (map[string]inter
 	return result, nil
 }
 
+// getAssetGeneralInfoByCollectibleId get assets by collectibleId
+func getAssetGeneralInfoByCollectibleId(collectibleId int64) (map[string]interface{}, error) {
+	result, err := models.FindAssetByGeneralInfoCollectibleId(collectibleId)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return result, nil
+}
+
 // getCollectionsByOwner get collection by owner
 func getCollectionsByUserMetamaskID(usermetamaskid string, page, pageSize int64) (map[string]interface{}, error) {
 	result, err := models.FindCollectionByUserMetamaskID(usermetamaskid, page, pageSize)
@@ -108,9 +119,39 @@ func getCollectionsByCollectionID(collectionId string, page, pageSize int64) (ma
 	return result, nil
 }
 
+// getAssetOfferRecordsByCollectibleId get asset orders by collectibleId
+func getAssetOfferRecordsByCollectibleId(collectibleId int64) ([]bson.M, error) {
+	result, err := models.FindAssetOfferRecordsByCollectibleId(collectibleId)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return result, nil
+}
+
+// getUserMediaByUserId find user media by userId
+func getUserMediaByUserId(userId string) (bson.M, error) {
+	result, err := models.FindUserMediaByUserId(userId)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return result, nil
+}
+
 // getItemActivityByCollectionId get item_activity by collectionId
 func getItemActivityByCollectionId(collectionId string, page, pageSize int64) (map[string]interface{}, error) {
 	result, err := models.FindItemActivityByCollectionId(collectionId, page, pageSize)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return result, nil
+}
+
+// getTradeHistoryByCollectibleId get trade history by collectibleId
+func getTradeHistoryByCollectibleId(collectibleId int64, page, pageSize int64) (map[string]interface{}, error) {
+	result, err := models.FindTradeHistoryByCollectibleId(collectibleId, page, pageSize)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
