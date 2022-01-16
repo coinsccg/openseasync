@@ -22,7 +22,7 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string) error {
 			UserMetamaskID:     user,
 			CollectionName:     v.Name,
 			Description:        v.Description,
-			BannerImageUrl:     v.BannerImageURL,
+			UserCoverUrl:       v.BannerImageURL,
 			CoverImageUrl:      v.ImageURL,
 			CoverLargeImageUrl: v.LargeImageURL,
 			CreateDate:         v.CreatedDate,

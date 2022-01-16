@@ -79,9 +79,9 @@ func openSeaOwnerCollectionsSync(user string) error {
 	return nil
 }
 
-// getAssetByOwner get assets by owner
-func getAssetByOwner(collectionId string, param models.Params) (map[string]interface{}, error) {
-	result, err := models.FindAssetByOwner(collectionId, param)
+// getAssetSearchByOwner get assets by owner
+func getAssetSearchByOwner(collectionId string, param models.Params) (map[string]interface{}, error) {
+	result, err := models.FindAssetSearchByOwner(collectionId, param)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -92,6 +92,16 @@ func getAssetByOwner(collectionId string, param models.Params) (map[string]inter
 // getAssetGeneralInfoByCollectibleId get assets by collectibleId
 func getAssetGeneralInfoByCollectibleId(collectibleId int64) (map[string]interface{}, error) {
 	result, err := models.FindAssetByGeneralInfoCollectibleId(collectibleId)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return result, nil
+}
+
+// getAssetOtherByCollection get assets other by collectibleId
+func getAssetOtherByCollection(collectibleId int64) (map[string]interface{}, error) {
+	result, err := models.FindAssetOtherByCollection(collectibleId)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err

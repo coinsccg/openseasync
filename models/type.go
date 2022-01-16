@@ -24,7 +24,7 @@ type Asset struct {
 	FileUrl             string `json:"fileUrl" bson:"fileUrl"`
 	Description         string `json:"description" bson:"description"`                 // NFT作品描述
 	ContractAddress     string `json:"contractAddress" bson:"contractAddress"`         // 合约地址
-	TokenId             string `json:"tokenId" bson:"tokenId"`                         // NFT token id
+	CollectibleTokenId  string `json:"collectibleTokenId" bson:"collectibleTokenId"`   // NFT token id
 	NumSales            int    `json:"numSales" bson:"numSales"`                       // NFT售卖次数
 	OwnerMetamaskId     string `json:"ownerMetamaskId" bson:"ownerMetamaskId"`         // NFT拥有者地址
 	OwnerName           string `json:"ownerName" bson:"ownerName"`                     // NFT拥有者名字
@@ -53,17 +53,18 @@ type Asset struct {
 
 	Status string `json:"status" bson:"status"`
 
-	IsDelete    int8   `json:"isDelete" bson:"isDelete"`       // 是否删除 1删除 0未删除 默认为0
-	RefreshTime int    `json:"refreshTime" bson:"refreshTime"` // 刷新时间
-	StartTime   string `json:"startTime" bson:"startTime"`     // 创建时间
-	EndTime     string `json:"endTime" bson:"endTime"`         // 结束时间
+	IsDelete    int8        `json:"isDelete" bson:"isDelete"`       // 是否删除 1删除 0未删除 默认为0
+	RefreshTime int64       `json:"refreshTime" bson:"refreshTime"` // 刷新时间
+	CreateDate  int64       `json:"createDate" bson:"createDate"`   // 创建时间
+	StartTime   interface{} `json:"startTime" bson:"startTime"`     // 创建时间
+	EndTime     interface{} `json:"endTime" bson:"endTime"`         // 结束时间
 }
 
 type Collection struct {
 	ID                 string  `json:"id" bson:"id"`                                 // 集合ID
 	UserMetamaskID     string  `json:"userMetamaskId" bson:"userMetamaskId"`         // 集合拥有者
 	CollectionName     string  `json:"collectionName" bson:"collectionName"`         // 集合名称
-	BannerImageUrl     string  `json:"bannerImageUrl" bson:"bannerImageUrl"`         // 集合背景图
+	UserCoverUrl       string  `json:"userCoverUrl" bson:"userCoverUrl"`             // 集合背景图
 	Description        string  `json:"description" bson:"description"`               // 集合描述
 	CoverImageUrl      string  `json:"coverImageUrl " bson:"coverImageUrl "`         // 封面图片
 	CoverLargeImageUrl string  `json:"coverLargeImageURL" bson:"coverLargeImageURL"` // 头像大图
@@ -98,6 +99,7 @@ type SellOrder struct {
 }
 
 type Orders struct {
+	UUID              string           `json:"uuid" bson:"uuid"`
 	Id                string           `json:"id" bson:"id"`                       // 订单hash
 	CollectibleId     int              `json:"collectibleId" bson:"collectibleId"` // NFT id
 	CreateDate        string           `json:"createDate" bson:"createDate"`       // 创建时间
@@ -132,7 +134,7 @@ type Trait struct {
 	TraitCount      int    `json:"traitCount" bson:"traitCount"` // 数量
 	OrderBy         string `json:"orderBy" bson:"orderBy"`
 	IsDelete        int8   `json:"isDelete" bson:"isDelete"`       // 是否删除 1删除 0未删除 默认为0
-	RefreshTime     int    `json:"refreshTime" bson:"refreshTime"` // 刷新时间
+	RefreshTime     int64  `json:"refreshTime" bson:"refreshTime"` // 刷新时间
 }
 
 type AssetsTopOwnership struct {
@@ -144,7 +146,7 @@ type AssetsTopOwnership struct {
 	ProfileImgUrl   string `json:"profileImgUrl" bson:"profileImgUrl"`   // 所有者头像
 	Quantity        string `json:"quantity" bson:"quantity"`             // 数量
 	IsDelete        int8   `json:"isDelete" bson:"isDelete"`             // 是否删除 1删除 0未删除 默认为0
-	RefreshTime     int    `json:"refreshTime" bson:"refreshTime"`       // 刷新时间
+	RefreshTime     int64  `json:"refreshTime" bson:"refreshTime"`       // 刷新时间
 }
 
 type ItemActivity struct {
@@ -156,7 +158,7 @@ type ItemActivity struct {
 	ContractAddress  string           `json:"contractAddress" bson:"contractAddress"`
 	TokenId          string           `json:"tokenId" bson:"tokenId"`
 	BidAmount        string           `json:"bidAmount" bson:"bidAmount"` // 投标金额
-	CreateDate       string           `json:"createDate" bson:"createDate"`
+	CreateDate       int64            `json:"createDate" bson:"createDate"`
 	Price            string           `json:"price" bson:"price"`                       // 成交价格ETH
 	PriceInUsd       string           `json:"priceInUsd " bson:"priceInUsd "`           // 成交价格USD
 	SellerId         int              `json:"sellerId" bson:"sellerId"`                 // 售卖者ID
@@ -773,5 +775,5 @@ type Params struct {
 	SortBy   int64   `form:"sortBy" binding:"oneof=0 1 2 3 4 5 6"`
 	MinPrice float64 `form:"minPrice" binding:"numeric,min=0"`
 	MaxPrice float64 `form:"maxPrice" binding:"numeric,min=0"`
-	Field    string  `form:"field" binding:"required"`
+	Field    string  `form:"field"`
 }

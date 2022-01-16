@@ -17,7 +17,7 @@ func HostManager(router *gin.RouterGroup) {
 	router.GET(constants.URL_OPENSEA_OWNER_ASSETS_SYNC, OpenSeaOwnerDataSync)
 	//router.GET(constants.URL_OPENSEA_OWNER_ASSETS, OpenSeaOwnerAssetsSync)
 	//router.GET(constants.URL_OPENSEA_OWNER_Collections, OpenSeaOwnerCollectionsSync)
-	router.GET(constants.URL_FIND_ASSETS_COLLETION_SEARCH, GetAssetsByOwner)
+	router.GET(constants.URL_FIND_ASSETS_COLLETION_SEARCH, GetAssetsSearchByOwner)
 	router.GET(constants.URL_FIND_ASSETS_COLLECTIBLESID, GetAssetGeneralInfoByCollectibleId)
 	router.GET(constants.URL_FIND_COLLECTION_USERMETAMASKID, GetCollectionsByUserMetamaskID)
 	router.GET(constants.URL_FIND_COLLECTION_COLLECTIONID, GetCollectionsByCollectionID)
@@ -25,6 +25,7 @@ func HostManager(router *gin.RouterGroup) {
 	router.GET(constants.URL_FIND_USER_SOCIALMEDIA, GetUserMediaByUserId)
 	router.GET(constants.URL_FIND_TRADE_HISTORY, GeTradeHistoryByCollectibleId)
 	router.GET(constants.URL_FIND_ASSETS_OFFERRECORDS, GetAssetOfferRecordsByCollectibleId)
+	router.GET(constants.URL_FIND_ASSETS_OTTHER, GetAssetOtherByCollection)
 	router.DELETE(constants.URL_DELETE_ASSET, DeleteAssetByTokenID)
 	router.DELETE(constants.URL_DELETE_COLLECTION, DeleteCollectionByCollectionId)
 
@@ -58,7 +59,7 @@ func OpenSeaOwnerDataSync(c *gin.Context) {
 	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil, nil))
 }
 
-func GetAssetsByOwner(c *gin.Context) {
+func GetAssetsSearchByOwner(c *gin.Context) {
 	var param models.Params
 	collectionId := c.Param("collectionId")
 
@@ -68,7 +69,7 @@ func GetAssetsByOwner(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	result, err := getAssetByOwner(collectionId, param)
+	result, err := getAssetSearchByOwner(collectionId, param)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
@@ -100,6 +101,30 @@ func GetAssetGeneralInfoByCollectibleId(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], result["metadata"]))
+}
+func GetAssetOtherByCollection(c *gin.Context) {
+	collectibleId := c.Param("collectibleId")
+
+	if collectibleId == "" {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	intCollectibleId, err := strconv.ParseInt(collectibleId, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	if intCollectibleId < 1 {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	result, err := getAssetOtherByCollection(intCollectibleId)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], nil))
 }
 
 func GetCollectionsByUserMetamaskID(c *gin.Context) {
