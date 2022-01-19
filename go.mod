@@ -4,7 +4,6 @@ go 1.17
 
 require (
 	github.com/BurntSushi/toml v0.4.1
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ethereum/go-ethereum v1.10.13
 	github.com/filswan/go-swan-lib v0.2.97
 	github.com/gin-gonic/gin v1.7.7
