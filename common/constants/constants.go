@@ -101,6 +101,6 @@ const (
 	OPENSEA_PROD_COLLECTIONS_URL  = "https://api.opensea.io/api/v1/collections"
 	OPENSEA_PROD_EVENT_URL        = "https://api.opensea.io/events"
 
-	// OPENSEA API KEY 6ac2260399914f6abd5955a07b1d55b9
-	OPENSEA_API_KEY = "" // Fill in relevant information and apply for API key https://docs.opensea.io/reference/request-an-api-key
+	// OPENSEA API KEY
+	OPENSEA_API_KEY = "6ac2260399914f6abd5955a07b1d55b9"
 )
