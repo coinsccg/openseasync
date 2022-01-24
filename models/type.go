@@ -103,9 +103,9 @@ type Orders struct {
 	UUID              string           `json:"uuid" bson:"uuid"`
 	Id                string           `json:"id" bson:"id"`                       // 订单hash
 	CollectibleId     int              `json:"collectibleId" bson:"collectibleId"` // NFT id
-	CreateDate        string           `json:"createDate" bson:"createDate"`       // 创建时间
+	StartTime         string           `json:"startTime" bson:"startTime"`         // 创建时间
 	BidTime           string           `json:"bidTime" bson:"bidTime"`             // 投标时间
-	ClosingDate       string           `json:"closingDate" bson:"closingDate"`     // 结束时间
+	EndTime           string           `json:"endTime" bson:"endTime"`             // 结束时间
 	Price             string           `json:"price" bson:"price"`                 // 当前价格
 	BasePrice         string           `json:"basePrice" bson:"basePrice"`         // 基础价格
 	CurrentBounty     string           `json:"currentBounty" bson:"currentBounty"`

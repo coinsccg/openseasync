@@ -111,6 +111,16 @@ func getAssetOtherByCollection(collectibleId int64) (map[string]interface{}, err
 	return result, nil
 }
 
+// getOrdersHighestPriceByCollectibleId find highest price by collectibled
+func getOrdersHighestPriceByCollectibleId(collectibleId int64) (interface{}, error) {
+	result, err := models.FindOrdersHighestPriceByCollectibleId(collectibleId)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	return result, nil
+}
+
 // getCollectionsByOwner get collection by owner
 func getCollectionsByUserMetamaskID(usermetamaskid string, page, pageSize int64) (map[string]interface{}, error) {
 	result, err := models.FindCollectionByUserMetamaskID(usermetamaskid, page, pageSize)

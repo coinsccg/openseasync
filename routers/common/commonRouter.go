@@ -25,6 +25,7 @@ func HostManager(router *gin.RouterGroup) {
 	router.GET(constants.URL_FIND_USER_SOCIALMEDIA, GetUserMediaByUserId)
 	router.GET(constants.URL_FIND_TRADE_HISTORY, GeTradeHistoryByCollectibleId)
 	router.GET(constants.URL_FIND_ASSETS_OFFERRECORDS, GetAssetOfferRecordsByCollectibleId)
+	router.GET(constants.URL_FIND_ASSETS_HIGHESTPRICE, GetOrdersHighestPriceByCollectibleId)
 	router.GET(constants.URL_FIND_ASSETS_OTTHER, GetAssetOtherByCollection)
 	router.DELETE(constants.URL_DELETE_ASSET, DeleteAssetByTokenID)
 	router.DELETE(constants.URL_DELETE_COLLECTION, DeleteCollectionByCollectionId)
@@ -125,6 +126,30 @@ func GetAssetOtherByCollection(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], nil))
+}
+
+func GetOrdersHighestPriceByCollectibleId(c *gin.Context) {
+	collectibleId := c.Param("collectibleId")
+	if collectibleId == "" {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	intCollectibleId, err := strconv.ParseInt(collectibleId, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	if intCollectibleId < 1 {
+		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+	result, err := getOrdersHighestPriceByCollectibleId(intCollectibleId)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(result, nil))
 }
 
 func GetCollectionsByUserMetamaskID(c *gin.Context) {

@@ -46,6 +46,7 @@ const (
 	URL_FIND_TRADE_HISTORY                         = "/collectibles/trade/:collectibleId/history"
 	URL_FIND_USER_SOCIALMEDIA                      = "/user/socialMedia/:userId"
 	URL_FIND_ASSETS_OFFERRECORDS                   = "/collectibles/offerRecords/:collectibleId"
+	URL_FIND_ASSETS_HIGHESTPRICE                   = "/collectibles/highestPrice/:collectibleId"
 	URL_FIND_ASSETS_OTTHER                         = "/collectibles/otherCollectibles/:collectibleId"
 	URL_DELETE_ASSET                               = "/assets/:user/:contract_address/:token_id"
 	URL_DELETE_COLLECTION                          = "/collections/:user/:slug"

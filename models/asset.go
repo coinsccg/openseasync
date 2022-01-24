@@ -437,6 +437,42 @@ func FindAssetOtherByCollection(collectibleId int64) (map[string]interface{}, er
 	return result, nil
 }
 
+// FindOrdersHighestPriceByCollectibleId find highest price by collectibled
+func FindOrdersHighestPriceByCollectibleId(collectibleId int64) (interface{}, error) {
+	var (
+		orders []bson.M
+		order  bson.M
+	)
+	db := database.GetMongoClient()
+	cond := mongo.Pipeline{
+		{{"$match", bson.M{"collectibleId": collectibleId, "tradeType": "onAuction", "isDelete": 0}}},
+		{{
+			"$addFields", bson.M{"highestPrice": bson.M{"$cond": bson.M{
+				"if":   bson.M{"$ne": bson.A{"$price", ""}},
+				"then": bson.M{"$convert": bson.M{"input": "$price", "to": "double"}},
+				"else": 0,
+			},
+			}},
+		}},
+		{{"$sort", bson.M{"highestPrice": -1}}},
+		{{"$limit", 1}},
+		{{"$project", bson.M{"_id": 0, "price": 1, "startTime": 1, "endTime": 1, "auctionMetamaskId": 1, "auctionUserName": 1}}},
+	}
+	cursor, err := db.Collection("orders").Aggregate(context.TODO(), cond)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	if err = cursor.All(context.TODO(), &orders); err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
+	if len(orders) >= 1 {
+		return orders[0], nil
+	}
+	return order, nil
+}
+
 // DeleteAssetByTokenID delete asset by tokenId
 func DeleteAssetByTokenID(user, contractAddress, tokenID string) error {
 	db := database.GetMongoClient()
@@ -599,8 +635,8 @@ func insertOrders(db *mongo.Database, collectibleId int, autoAsset AutoAsset, uu
 			UUID:              uuid,
 			Id:                v.OrderHash,
 			CollectibleId:     collectibleId,
-			CreateDate:        v.CreatedDate,
-			ClosingDate:       v.ClosingDate,
+			StartTime:         v.CreatedDate,
+			EndTime:           v.ClosingDate,
 			BidTime:           v.CreatedDate,
 			AuctionMetamaskId: v.Maker.Address,
 			AuctionUserName:   v.Maker.User.Username,
