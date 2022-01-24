@@ -46,7 +46,6 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 				CreatorImgUrl:      v.Creator.ProfileImgURL,
 				CollectionID:       v.Collection.Slug,
 				CollectionName:     v.Collection.Name,
-				TokenMetadata:      v.TokenMetadata,
 				RefreshTime:        refreshTime,
 				Status:             "onHold",
 				NumOfCopies:        1,
@@ -341,13 +340,18 @@ func FindAssetByGeneralInfoCollectibleId(collectibleId int64) (map[string]interf
 			{"startTime", 1},
 			{"endTime", 1},
 		})
+
 	err := db.Collection("assets").FindOne(context.TODO(), bson.M{"id": collectibleId}, opts).Decode(&asset)
-	if err != nil {
+	if err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
 
-	result["data"] = asset
+	if asset == nil {
+		result["data"] = ResponseAsset{}
+	} else {
+		result["data"] = asset
+	}
 	return result, nil
 }
 
@@ -414,7 +418,7 @@ func FindAssetOtherByCollection(collectibleId int64) (map[string]interface{}, er
 		})
 	err := db.Collection("assets").
 		FindOne(context.TODO(), bson.M{"id": collectibleId}).Decode(&asset)
-	if err != nil {
+	if err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}

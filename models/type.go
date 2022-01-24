@@ -33,7 +33,6 @@ type Asset struct {
 	CreatorPersonalSite string `json:"creatorPersonalSite" bson:"creatorPersonalSite"` // NFT创造者个人网站
 	CreatorName         string `json:"creatorName" bson:"creatorName"`                 // NFT创造者名字
 	CreatorImgUrl       string `json:"creatorImgUrl" bson:"creatorImgUrl"`             // 创造者头像
-	TokenMetadata       string `json:"tokenMetadata" bson:"tokenMetadata"`             // NFT元数据
 
 	CollectionID   string `json:"collectionId" bson:"collectionId"`     // 集合 id
 	CollectionName string `json:"collectionName" bson:"collectionName"` // 集合 name
@@ -779,4 +778,44 @@ type Params struct {
 	MinPrice float64 `form:"minPrice" binding:"numeric,min=0"`
 	MaxPrice float64 `form:"maxPrice" binding:"numeric,min=0"`
 	Field    string  `form:"field"`
+}
+
+type ResponseCollection struct {
+	Id             string  `json:"id"`
+	UserId         string  `json:"userId"`
+	UserMetamaskId string  `json:"userMetamaskId"`
+	UserCoverUrl   string  `json:"userCoverUrl"`
+	AvatarUrl      string  `json:"avatarUrl"`
+	UserName       string  `json:"userName"`
+	ItemsCount     int     `json:"itemsCount"`
+	OwnersCount    int     `json:"ownersCount"`
+	LikesCount     int     `json:"likesCount"`
+	ViewsCount     int     `json:"viewsCount"`
+	FloorPrice     int     `json:"floorPrice"`
+	HighestPrice   float64 `json:"highestPrice"`
+	CollectionName string  `json:"collectionName"`
+	Description    string  `json:"description"`
+}
+
+type ResponseAsset struct {
+	Id                  int     `json:"id"`
+	CollectibleName     string  `json:"collectibleName"`
+	CollectionId        string  `json:"collectionId"`
+	CollectionName      string  `json:"collectionName"`
+	CreatorId           string  `json:"creatorId"`
+	CreatorMetamaskId   string  `json:"creatorMetamaskId"`
+	CreatorName         string  `json:"creatorName"`
+	CreatorPersonalSite string  `json:"creatorPersonalSite"`
+	Description         string  `json:"description"`
+	FileUrl             string  `json:"fileUrl"`
+	OwnerId             string  `json:"ownerId"`
+	OwnerMetamaskId     string  `json:"ownerMetamaskId"`
+	OwnerName           string  `json:"ownerName"`
+	Price               float64 `json:"price"`
+	Status              string  `json:"status"`
+	ThumbnailUrl        string  `json:"thumbnailUrl"`
+	CollectibleTokenId  string  `json:"collectibleTokenId"`
+	RecordId            string  `json:"recordId"`
+	StartTime           string  `json:"startTime"`
+	EndTime             string  `json:"endTime"`
 }

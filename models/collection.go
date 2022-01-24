@@ -158,6 +158,7 @@ func FindCollectionByCollectionID(collectionId string) (map[string]interface{}, 
 				"userName": 1, "itemsCount": 1, "ownersCount": 1, "floorPrice": 1, "highestPrice": 1,
 				"collectionName": 1, "likesCount": 1, "viewsCount": 1, "description": 1}}},
 	}
+
 	cursor, err := db.Collection("collections").Aggregate(context.TODO(), pipe)
 	if err != nil {
 		logs.GetLogger().Error(err)
@@ -170,8 +171,10 @@ func FindCollectionByCollectionID(collectionId string) (map[string]interface{}, 
 
 	if len(collections) >= 1 {
 		collection = collections[0]
+		result["data"] = collection
+	} else {
+		result["data"] = ResponseCollection{}
 	}
-	result["data"] = collection
 
 	return result, nil
 }
