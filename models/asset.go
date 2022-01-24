@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	uuid2 "github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -268,7 +267,6 @@ func FindAssetSearchByOwner(collectionId string, param Params) (map[string]inter
 		}},
 		{{"$match", bson.M{"price": bson.M{"$gte": param.MinPrice * math.Pow10(18), "$lte": param.MaxPrice * math.Pow10(18)}}}},
 	}
-	fmt.Println(param.MaxPrice * math.Pow10(18))
 	cursor, err := db.Collection("assets").Aggregate(context.TODO(), cond)
 	if err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)
@@ -315,11 +313,11 @@ func FindAssetSearchByOwner(collectionId string, param Params) (map[string]inter
 // FindAssetByGeneralInfoCollectibleId find assets by collectibleId
 func FindAssetByGeneralInfoCollectibleId(collectibleId int64) (map[string]interface{}, error) {
 	var (
-		assets = make([]bson.M, 0)
+		asset  bson.M
 		result = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
-	opts := options.Find().SetProjection(
+	opts := options.FindOne().SetProjection(
 		bson.D{
 			{"_id", 0},
 			{"id", 1},
@@ -343,17 +341,13 @@ func FindAssetByGeneralInfoCollectibleId(collectibleId int64) (map[string]interf
 			{"startTime", 1},
 			{"endTime", 1},
 		})
-	cursor, err := db.Collection("assets").Find(context.TODO(), bson.M{"id": collectibleId}, opts)
-	if err != nil && err != mongo.ErrNoDocuments {
-		logs.GetLogger().Error(err)
-		return nil, err
-	}
-	if err = cursor.All(context.TODO(), &assets); err != nil {
+	err := db.Collection("assets").FindOne(context.TODO(), bson.M{"id": collectibleId}, opts).Decode(&asset)
+	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
 
-	result["data"] = assets
+	result["data"] = asset
 	return result, nil
 }
 

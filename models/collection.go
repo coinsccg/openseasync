@@ -116,7 +116,7 @@ func FindCollectionByUserMetamaskID(usermetamaskid string, page, pageSize int64)
 		}},
 	}
 	cursor, err := db.Collection("collections").Aggregate(context.TODO(), pipe)
-	if err != nil && err != mongo.ErrNoDocuments {
+	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
@@ -159,7 +159,7 @@ func FindCollectionByCollectionID(collectionId string) (map[string]interface{}, 
 				"collectionName": 1, "likesCount": 1, "viewsCount": 1, "description": 1}}},
 	}
 	cursor, err := db.Collection("collections").Aggregate(context.TODO(), pipe)
-	if err != nil && err != mongo.ErrNoDocuments {
+	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
