@@ -268,7 +268,7 @@ func FindAssetSearchByOwner(collectionId string, param Params) (map[string]inter
 		{{"$match", bson.M{"price": bson.M{"$gte": param.MinPrice * math.Pow10(18), "$lte": param.MaxPrice * math.Pow10(18)}}}},
 	}
 	cursor, err := db.Collection("assets").Aggregate(context.TODO(), cond)
-	if err != nil && err != mongo.ErrNoDocuments {
+	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
@@ -295,7 +295,7 @@ func FindAssetSearchByOwner(collectionId string, param Params) (map[string]inter
 	}
 	cond = append(cond, pipe...)
 	cursor, err = db.Collection("assets").Aggregate(context.TODO(), cond)
-	if err != nil && err != mongo.ErrNoDocuments {
+	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
@@ -358,7 +358,7 @@ func FindAssetOfferRecordsByCollectibleId(collectibleId int64) ([]bson.M, error)
 	)
 	db := database.GetMongoClient()
 	err := db.Collection("assets").FindOne(context.TODO(), bson.M{"id": collectibleId}).Decode(&asset)
-	if err != nil {
+	if err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
@@ -374,7 +374,7 @@ func FindAssetOfferRecordsByCollectibleId(collectibleId int64) ([]bson.M, error)
 			{"bidTime", 1},
 		})
 	cursor, err := db.Collection("orders").Find(context.TODO(), bson.M{"collectibleId": collectibleId, "tradeType": asset["status"]}, opts)
-	if err != nil && err != mongo.ErrNoDocuments {
+	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
@@ -414,12 +414,16 @@ func FindAssetOtherByCollection(collectibleId int64) (map[string]interface{}, er
 		})
 	err := db.Collection("assets").
 		FindOne(context.TODO(), bson.M{"id": collectibleId}).Decode(&asset)
-	if err != nil && err != mongo.ErrNoDocuments {
+	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
 	collectionId := asset.CollectionID
 	cursor, err := db.Collection("assets").Find(context.TODO(), bson.M{"collectionId": collectionId}, opts)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
 	if err = cursor.All(context.TODO(), &assets); err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
