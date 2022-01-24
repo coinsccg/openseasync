@@ -35,8 +35,10 @@ type Asset struct {
 	CreatorImgUrl       string `json:"creatorImgUrl" bson:"creatorImgUrl"`             // 创造者头像
 	TokenMetadata       string `json:"tokenMetadata" bson:"tokenMetadata"`             // NFT元数据
 
-	CollectionID string `json:"collectionId" bson:"collectionId"` // 集合 id
-	RecordId     string `json:"recordId" bson:"recordId"`         // 售卖记录 id
+	CollectionID   string `json:"collectionId" bson:"collectionId"`     // 集合 id
+	CollectionName string `json:"collectionName" bson:"collectionName"` // 集合 name
+
+	RecordId string `json:"recordId" bson:"recordId"` // 售卖记录 id
 
 	AssetsTopOwnerships []AssetsTopOwnership `json:"assetsTopOwnerships" bson:"assetsTopOwnerships"`
 	Traits              []Trait              `json:"traits" bson:"traits"`
@@ -113,6 +115,7 @@ type Orders struct {
 	AuctionUserName   string           `json:"auctionUserName" bson:"auctionUserName"`
 	PayTokenContract  PayTokenContract `json:"payTokenContract" bson:"payTokenContract"` // 支付方式
 	IsDelete          int8             `json:"isDelete" bson:"isDelete"`                 // 是否删除 1删除 0未删除 默认为0
+	TradeType         string           `json:"tradeType " bson:"tradeType"`              // 事件类型
 }
 
 type PayTokenContract struct {
@@ -771,7 +774,7 @@ type AutoEvent struct {
 type Params struct {
 	Page     int64   `form:"page" binding:"numeric,min=1"`
 	PageSize int64   `form:"pageSize" binding:"numeric,min=1"`
-	Status   int64   `form:"status" binding:"oneof=0 1"`
+	Status   int64   `form:"status" binding:"oneof=0 1 2"`
 	SortBy   int64   `form:"sortBy" binding:"oneof=0 1 2 3 4 5 6"`
 	MinPrice float64 `form:"minPrice" binding:"numeric,min=0"`
 	MaxPrice float64 `form:"maxPrice" binding:"numeric,min=0"`

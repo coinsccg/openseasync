@@ -160,33 +160,17 @@ func GetCollectionsByUserMetamaskID(c *gin.Context) {
 
 func GetCollectionsByCollectionID(c *gin.Context) {
 	collectionId := c.Param("collectionId")
-	page := c.Query("page")
-	pageSize := c.Query("pageSize")
 	if collectionId == "" {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return
 	}
-	pageInt, err := strconv.ParseInt(page, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
-		return
-	}
-	pageSizeInt, err := strconv.ParseInt(pageSize, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
-		return
-	}
-	if pageInt < 1 || pageSizeInt < 1 {
-		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
-		return
-	}
-	result, err := getCollectionsByCollectionID(collectionId, pageInt, pageSizeInt)
+	result, err := getCollectionsByCollectionID(collectionId)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.GET_RECORD_lIST_ERROR_CODE, err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], result["metadata"]))
+	c.JSON(http.StatusOK, common.CreateSuccessResponse(result["data"], nil))
 }
 
 func GetUserMediaByUserId(c *gin.Context) {

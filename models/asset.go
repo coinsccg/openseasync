@@ -15,6 +15,7 @@ import (
 	"openseasync/database"
 	"openseasync/logs"
 	"strconv"
+	"time"
 )
 
 const ZeroAddress = "0x0000000000000000000000000000000000000000"
@@ -45,6 +46,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 				CreatorName:        v.Creator.User.Username,
 				CreatorImgUrl:      v.Creator.ProfileImgURL,
 				CollectionID:       v.Collection.Slug,
+				CollectionName:     v.Collection.Name,
 				TokenMetadata:      v.TokenMetadata,
 				RefreshTime:        refreshTime,
 				Status:             "onHold",
@@ -102,7 +104,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 			asset.SellOrders.PayTokenContract.UsdPrice = sellOrders.PaymentTokenContract.UsdPrice
 		}
 		// insert transaction
-		//time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 2)
 		createDate, err := insertTransaction(db, v.AssetContract.Address, v.TokenID)
 		if err != nil {
 			logs.GetLogger().Error(err)
@@ -110,7 +112,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 		}
 		asset.CreateDate = createDate
 
-		//time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 2)
 		// If the number of requests is too many, a 429 error code will be thrown
 		resp, err := utils.RequestOpenSeaSingleAsset(v.AssetContract.Address, v.TokenID)
 		if err != nil {
@@ -248,8 +250,10 @@ func FindAssetSearchByOwner(collectionId string, param Params) (map[string]inter
 	}
 	if param.Status == 0 {
 		status = "onSale"
-	} else {
+	} else if param.Status == 1 {
 		status = "onAuction"
+	} else {
+		status = "onHold"
 	}
 
 	cond := mongo.Pipeline{
@@ -354,8 +358,16 @@ func FindAssetByGeneralInfoCollectibleId(collectibleId int64) (map[string]interf
 }
 
 func FindAssetOfferRecordsByCollectibleId(collectibleId int64) ([]bson.M, error) {
-	var orders = make([]bson.M, 0)
+	var (
+		asset  bson.M
+		orders = make([]bson.M, 0)
+	)
 	db := database.GetMongoClient()
+	err := db.Collection("assets").FindOne(context.TODO(), bson.M{"id": collectibleId}).Decode(&asset)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return nil, err
+	}
 	opts := options.Find().SetProjection(
 		bson.D{
 			{"_id", 0},
@@ -364,9 +376,10 @@ func FindAssetOfferRecordsByCollectibleId(collectibleId int64) ([]bson.M, error)
 			{"auctionMetamaskId", 1},
 			{"auctionUserName", 1},
 			{"price", 1},
+			{"tradeType", 1},
 			{"bidTime", 1},
 		})
-	cursor, err := db.Collection("orders").Find(context.TODO(), bson.M{"collectibleId": collectibleId}, opts)
+	cursor, err := db.Collection("orders").Find(context.TODO(), bson.M{"collectibleId": collectibleId, "tradeType": asset["status"]}, opts)
 	if err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -597,8 +610,14 @@ func insertOrders(db *mongo.Database, collectibleId int, autoAsset AutoAsset, uu
 		orders.PayTokenContract.ImageURL = v.PaymentTokenContract.ImageURL
 		orders.PayTokenContract.EthPrice = v.PaymentTokenContract.EthPrice
 		orders.PayTokenContract.UsdPrice = v.PaymentTokenContract.UsdPrice
+
+		orders.TradeType = "onAuction"
+		if v.ClosingExtendable == true {
+			orders.TradeType = "onSale"
+		}
+
 		count, err := db.Collection("orders").
-			CountDocuments(context.TODO(), bson.M{"orderHash": v.OrderHash})
+			CountDocuments(context.TODO(), bson.M{"id": v.OrderHash})
 		if err != nil {
 			logs.GetLogger().Error(err)
 			return err
