@@ -17,8 +17,6 @@ import (
 func HostManager(router *gin.RouterGroup) {
 	router.GET(constants.URL_HOST_GET_HOST_INFO, GetSwanMinerVersion)
 	router.GET(constants.URL_OPENSEA_OWNER_ASSETS_SYNC, OpenSeaOwnerDataSync)
-	//router.GET(constants.URL_OPENSEA_OWNER_ASSETS, OpenSeaOwnerAssetsSync)
-	//router.GET(constants.URL_OPENSEA_OWNER_Collections, OpenSeaOwnerCollectionsSync)
 	router.GET(constants.URL_FIND_ASSETS_COLLETION_SEARCH, GetAssetsSearchByOwner)
 	router.GET(constants.URL_FIND_ASSETS_COLLECTIBLESID, GetAssetGeneralInfoByCollectibleId)
 	router.GET(constants.URL_FIND_COLLECTION_USERMETAMASKID, GetCollectionsByUserMetamaskID)
