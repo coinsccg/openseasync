@@ -2,7 +2,6 @@ package common
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"openseasync/common"
 	"openseasync/common/constants"
@@ -10,6 +9,9 @@ import (
 	"openseasync/logs"
 	"openseasync/models"
 	"strconv"
+	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 func HostManager(router *gin.RouterGroup) {
@@ -39,9 +41,16 @@ func GetSwanMinerVersion(c *gin.Context) {
 
 // sync opensea assets and collections
 func OpenSeaOwnerDataSync(c *gin.Context) {
-	user := c.Param("user")
+	user := strings.ToLower(c.Param("user"))
 	if len(user) != 42 {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
+		return
+	}
+
+	// sync collections
+	if err := openSeaOwnerCollectionsSync(user); err != nil {
+		logs.GetLogger().Error(err)
+		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
 	}
 
@@ -51,12 +60,7 @@ func OpenSeaOwnerDataSync(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
 		return
 	}
-	// sync collections
-	if err := openSeaOwnerCollectionsSync(user); err != nil {
-		logs.GetLogger().Error(err)
-		c.JSON(http.StatusInternalServerError, common.CreateErrorResponse(errorinfo.OPENSEA_HTTP_REQUEST_ERROR_CODE, err.Error()))
-		return
-	}
+
 	c.JSON(http.StatusOK, common.CreateSuccessResponse(nil, nil))
 }
 
@@ -153,7 +157,7 @@ func GetOrdersHighestPriceByCollectibleId(c *gin.Context) {
 }
 
 func GetCollectionsByUserMetamaskID(c *gin.Context) {
-	usermetamaskid := c.Param("usermetamaskid")
+	usermetamaskid := strings.ToLower(c.Param("usermetamaskid"))
 	page := c.Query("page")
 	pageSize := c.Query("pageSize")
 	if len(usermetamaskid) != 42 {
@@ -199,7 +203,7 @@ func GetCollectionsByCollectionID(c *gin.Context) {
 }
 
 func GetUserMediaByUserId(c *gin.Context) {
-	userId := c.Param("userId")
+	userId := strings.ToLower(c.Param("userMetamaskId"))
 	if userId == "" {
 		c.JSON(http.StatusBadRequest, common.CreateErrorResponse(errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_CODE, errorinfo.HTTP_REQUEST_PARAM_VALUE_ERROR_MSG))
 		return

@@ -3,18 +3,19 @@ package models
 import (
 	"context"
 	"encoding/json"
-	uuid2 "github.com/google/uuid"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"math"
 	"math/big"
 	"openseasync/common/utils"
 	"openseasync/database"
 	"openseasync/logs"
 	"strconv"
+	"strings"
 	"time"
+
+	uuid2 "github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const ZeroAddress = "0x0000000000000000000000000000000000000000"
@@ -29,10 +30,10 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 			asset = Asset{
 				Id:                 v.ID,
 				UserMetamaskID:     user,
-				Name:               v.Name,
+				CollectibleName:    v.Name,
 				CoverImageUrl:      v.ImageURL,
 				CoverPreviewUrl:    v.ImagePreviewURL,
-				ThumbnailUrl:       v.ImageThumbnailURL,
+				ThumbnailUrl:       v.ImageURL,
 				FileUrl:            v.TokenMetadata,
 				Description:        v.Description,
 				ContractAddress:    v.AssetContract.Address,
@@ -81,9 +82,12 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 			traits = append(traits, trait)
 		}
 		asset.Traits = traits
+		if len(asset.Traits) < 1 {
+			asset.OwnerMetamaskId = v.Creator.Address
+		}
 		if v.SellOrders != nil {
 			sellOrders := v.SellOrders[0]
-			asset.Price = sellOrders.CurrentPrice
+			asset.Price = strings.Split(sellOrders.CurrentPrice, ".")[0]
 			asset.StartTime = utils.ParseTime(sellOrders.CreatedDate)
 			if v.SellOrders[0].ClosingDate != "" {
 				asset.EndTime = utils.ParseTime(sellOrders.ClosingDate)
@@ -183,11 +187,22 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 			Username:         v.Owner.User.Username,
 			AvatarUrl:        v.Owner.ProfileImgURL,
 			PersonalPageLink: v.ExternalLink,
-			Discord:          v.Collection.DiscordURL,
-			Telegram:         v.Collection.TelegramURL,
-			Twitter:          v.Collection.TwitterUsername,
-			Instagram:        v.Collection.InstagramUsername,
+			DiscordLink:      v.Collection.DiscordURL,
+			TelegramLink:     v.Collection.TelegramURL,
+			TwitterLink:      v.Collection.TwitterUsername,
+			InstagramLink:    "https://www.instagram.com/" + v.Collection.InstagramUsername,
 		}
+		// 	fmt.Println("====================== userModel Start ==========================")
+
+		// fmt.Println((userModel))
+		// fmt.Println("====================== userModel End ==========================")
+		// 	if userModel.InstagramLink != ""{
+		// 		userModel.InstagramLink = "https://www.instagram.com/" + userModel.InstagramLink
+		// 	}
+		// 	fmt.Println("====================== userModel Start::after ==========================")
+
+		// fmt.Println((userModel))
+		// fmt.Println("====================== userModel End::after ==========================")
 		if v.Owner.Address == ZeroAddress && user == v.Creator.Address {
 			userModel.Username = v.Creator.User.Username
 			userModel.AvatarUrl = v.Creator.ProfileImgURL
@@ -207,6 +222,19 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 		if err := insertContract(db, v.AssetContract.Address, &contract); err != nil {
 			logs.GetLogger().Error(err)
 			return err
+		}
+
+		// update collection creator
+		if err := updateCollectionCreator(db, v.Collection.Slug, v.Creator.Address); err != nil {
+			logs.GetLogger().Error(err)
+			return err
+		}
+		if asset.Price != "" {
+			// update collection floor price
+			if err := updateCollectionFloorPrice(db, v.Collection.Slug, asset.Price); err != nil {
+				logs.GetLogger().Error(err)
+				return err
+			}
 		}
 
 	}
@@ -255,7 +283,7 @@ func FindAssetSearchByOwner(collectionId string, param Params) (map[string]inter
 	}
 
 	cond := mongo.Pipeline{
-		{{"$match", bson.M{"collectionId": collectionId, "status": status, "name": primitive.Regex{Pattern: param.Field, Options: "i"}, "isDelete": 0}}},
+		{{"$match", bson.M{"collectionId": collectionId, "status": status, "isDelete": 0}}},
 		{{
 			"$addFields", bson.M{"price": bson.M{"$cond": bson.M{
 				"if":   bson.M{"$ne": bson.A{"$price", ""}},
@@ -282,7 +310,7 @@ func FindAssetSearchByOwner(collectionId string, param Params) (map[string]inter
 		{{"$limit", param.PageSize}},
 		{{"$project",
 			bson.M{
-				"_id": 0, "id": 1, "coverImageUrl": 1, "name": 1, "creatorId ": 1, "creatorMetamaskId": 1,
+				"_id": 0, "id": 1, "coverImageUrl": 1, "collectibleName": 1, "creatorId ": 1, "creatorMetamaskId": 1,
 				"creatorName": 1, "likesCount": 1, "viewsCount": 1, "numOfCopies": 1, "totalCopies": 1, "status": 1,
 				"ownerUserId": 1, "ownerMetamaskId": 1, "createDate": 1, "endTime": 1,
 				"price": bson.M{"$cond": bson.M{
@@ -423,7 +451,7 @@ func FindAssetOtherByCollection(collectibleId int64) (map[string]interface{}, er
 		return nil, err
 	}
 	collectionId := asset.CollectionID
-	cursor, err := db.Collection("assets").Find(context.TODO(), bson.M{"collectionId": collectionId}, opts)
+	cursor, err := db.Collection("assets").Find(context.TODO(), bson.M{"collectionId": collectionId, "id": bson.M{"$ne": collectibleId}}, opts)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -707,10 +735,51 @@ func insertUsers(db *mongo.Database, userAddress string, user User) error {
 		if _, err = db.Collection("users").UpdateOne(
 			context.TODO(),
 			bson.M{"userMetamaskId": userAddress},
-			bson.M{"$set": bson.M{"userName": user.Username, "avatarUrl": user.AvatarUrl}}); err != nil {
+			bson.M{"$set": bson.M{"userName": user.Username, "avatarUrl": user.AvatarUrl, "instagramLink": user.InstagramLink, "personalPageLink": user.PersonalPageLink,
+				"discordLink": user.DiscordLink, "telegramLink": user.TelegramLink, "twitterLink": user.TwitterLink}}); err != nil {
 			logs.GetLogger().Error(err)
 			return err
 		}
 	}
+	return nil
+}
+
+// update collection creator
+func updateCollectionCreator(db *mongo.Database, collectionId string, creator string) error {
+	if _, err := db.Collection("collections").
+		UpdateOne(context.TODO(), bson.M{"id": collectionId}, bson.M{"$set": bson.M{"creatorMetamaskId": creator}}); err != nil {
+		logs.GetLogger().Error(err)
+		return err
+	}
+	return nil
+}
+
+// update collection floor price
+func updateCollectionFloorPrice(db *mongo.Database, collectionId string, floorPrice string) error {
+	var collection Collection
+
+	if err := db.Collection("collections").
+		FindOne(context.TODO(), bson.M{"id": collectionId}).Decode(&collection); err != nil {
+		logs.GetLogger().Error(err)
+		return err
+	}
+
+	if collection.FloorPrice != "" {
+		// 比较最低价格
+		n1 := new(big.Int)
+		n1.SetString(collection.FloorPrice, 10)
+		n2 := new(big.Int)
+		n2.SetString(floorPrice, 10)
+		if n1.Cmp(n2) < 1 {
+			return nil
+		}
+	}
+
+	if _, err := db.Collection("collections").
+		UpdateOne(context.TODO(), bson.M{"id": collectionId}, bson.M{"$set": bson.M{"floorPrice": floorPrice}}); err != nil {
+		logs.GetLogger().Error(err)
+		return err
+	}
+
 	return nil
 }

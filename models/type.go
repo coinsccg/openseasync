@@ -7,18 +7,18 @@ type User struct {
 	UserMetamaskID   string `json:"userMetamaskId" bson:"userMetamaskId"`     // 用户地址
 	Username         string `json:"userName" bson:"userName"`                 // 用户头像
 	AvatarUrl        string `json:"avatarUrl" bson:"avatarUrl"`               // 用户头像
-	Discord          string `json:"discord" bson:"discord"`                   // discord链接
-	Telegram         string `json:"telegram" bson:"telegram"`                 // telegram链接
-	Instagram        string `json:"instagram" bson:"instagram"`               // instagram链接
-	Twitter          string `json:"twitter" bson:"twitter"`                   // twitter链接
+	DiscordLink      string `json:"discordLink" bson:"discordLink"`           // discord链接
+	TelegramLink     string `json:"telegramLink" bson:"telegramLink"`         // telegram链接
+	InstagramLink    string `json:"instagramLink" bson:"instagramLink"`       // instagram链接
+	TwitterLink      string `json:"twitterLink" bson:"twitterLink"`           // twitter链接
 	PersonalPageLink string `json:"personalPageLink" bson:"personalPageLink"` // 个人链接
 }
 
 type Asset struct {
 	Id                  int    `json:"id" bson:"id"`                           // NFT ID
 	UserMetamaskID      string `json:"userMetamaskId" bson:"userMetamaskId"`   // 用户地址
-	Name                string `json:"name" bson:"name"`                       // NFT作品标题
-	CoverImageUrl       string `json:"coverImageUrl " bson:"coverImageUrl "`   // 封面图片
+	CollectibleName     string `json:"collectibleName" bson:"collectibleName"` // NFT作品标题
+	CoverImageUrl       string `json:"coverImageUrl" bson:"coverImageUrl"`     // 封面图片
 	CoverPreviewUrl     string `json:"coverPreviewUrl" bson:"coverPreviewUrl"` // NFT作品原图
 	ThumbnailUrl        string `json:"thumbnailUrl" bson:"thumbnailUrl"`       // NFT作品缩略图
 	FileUrl             string `json:"fileUrl" bson:"fileUrl"`
@@ -63,7 +63,8 @@ type Asset struct {
 
 type Collection struct {
 	ID                 string  `json:"id" bson:"id"`                                 // 集合ID
-	UserMetamaskID     string  `json:"userMetamaskId" bson:"userMetamaskId"`         // 集合拥有者
+	UserMetamaskID     string  `json:"userMetamaskId" bson:"userMetamaskId"`         // 用户地址
+	CreatorMetamaskId  string  `json:"creatorMetamaskId" bson:"creatorMetamaskId"`   // 集合创造者地址
 	CollectionName     string  `json:"collectionName" bson:"collectionName"`         // 集合名称
 	UserCoverUrl       string  `json:"userCoverUrl" bson:"userCoverUrl"`             // 集合背景图
 	Description        string  `json:"description" bson:"description"`               // 集合描述
@@ -74,8 +75,8 @@ type Collection struct {
 	RefreshTime        int64   `json:"refreshTime" bson:"refreshTime"`               // 刷新时间
 	ItemsCount         int     `json:"itemsCount" bson:"itemsCount"`                 // 集合中NFT总数
 	TotalVolume        float64 `json:"totalVolume" bson:"totalVolume"`               // 交易量
-	FloorPrice         float64 `json:"floorPrice" bson:"floorPrice"`                 // 最低价格
-	HighestPrice       float64 `json:"highestPrice" bson:"highestPrice"`             // 最高价格
+	FloorPrice         string  `json:"floorPrice" bson:"floorPrice"`                 // 最低价格
+	HighestPrice       string  `json:"highestPrice" bson:"highestPrice"`             // 最高价格
 	OwnersCount        int     `json:"ownersCount" bson:"ownersCount"`               // 所有NFT中属于自己的NFT个数 此地段可能是个big int, 所以采用string存储
 	LikesCount         int     `json:"likesCount" bson:"likesCount"`
 	ViewsCount         int     `json:"viewsCount" bson:"viewsCount"`

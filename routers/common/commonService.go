@@ -2,13 +2,14 @@ package common
 
 import (
 	"encoding/json"
-	"go.mongodb.org/mongo-driver/bson"
 	"openseasync/common"
 	"openseasync/common/utils"
 	"openseasync/logs"
 	"openseasync/models"
 	"runtime"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func getSwanMinerHostInfo() *common.HostInfo {
@@ -25,6 +26,7 @@ func openSeaOwnerAssetsSync(user string) error {
 	var n int64 = 1
 	refreshTime := time.Now().Unix()
 	for {
+		time.Sleep(time.Second * 2)
 		// If the number of requests is too many, a 429 error code will be thrown
 		content, err := utils.RequestOpenSeaAssets(user, 50*(n-1), 50)
 		if err != nil {
@@ -47,7 +49,7 @@ func openSeaOwnerAssetsSync(user string) error {
 			break
 		}
 		n++
-		time.Sleep(time.Second)
+
 	}
 
 	return nil
@@ -58,7 +60,7 @@ func openSeaOwnerCollectionsSync(user string) error {
 	var n int64 = 1
 	refreshTime := time.Now().Unix()
 	for {
-		time.Sleep(time.Second * 2)
+
 		content, err := utils.RequestOpenSeaCollections(user, 300*(n-1), 300*n)
 		if err != nil {
 			logs.GetLogger().Error(err)
@@ -76,6 +78,7 @@ func openSeaOwnerCollectionsSync(user string) error {
 			break
 		}
 		n++
+		time.Sleep(time.Second)
 	}
 
 	return nil
@@ -152,8 +155,8 @@ func getAssetOfferRecordsByCollectibleId(collectibleId int64) ([]bson.M, error) 
 }
 
 // getUserMediaByUserId find user media by userId
-func getUserMediaByUserId(userId string) (interface{}, error) {
-	result, err := models.FindUserMediaByUserId(userId)
+func getUserMediaByUserId(userMetamaskId string) (interface{}, error) {
+	result, err := models.FindUserMediaByUserId(userMetamaskId)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err

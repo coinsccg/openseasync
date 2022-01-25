@@ -3,10 +3,11 @@ package models
 import (
 	"context"
 	"errors"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"openseasync/database"
 	"openseasync/logs"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var CONNOT_DELETE_COLLECTION_ERR = errors.New("Cannot delete a collection that has an asset")
@@ -19,6 +20,7 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string, refreshT
 		var collection = Collection{
 			ID:                 v.Slug,
 			UserMetamaskID:     user,
+			CreatorMetamaskId:  v.PayoutAddress,
 			CollectionName:     v.Name,
 			Description:        v.Description,
 			UserCoverUrl:       v.BannerImageURL,
@@ -29,7 +31,6 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string, refreshT
 			OwnersCount:        v.Stats.NumOwners,
 			ItemsCount:         int(v.Stats.TotalSupply),
 			TotalVolume:        v.Stats.TotalVolume,
-			FloorPrice:         v.Stats.FloorPrice,
 		}
 		count, err := db.Collection("collections").
 			CountDocuments(context.TODO(), bson.M{"userMetamaskId": user, "id": v.Slug, "isDelete": 0})
@@ -76,13 +77,13 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string, refreshT
 }
 
 // FindCollectionByUserMetamaskID find collections by usermetamaskid
-func FindCollectionByUserMetamaskID(usermetamaskid string, page, pageSize int64) (map[string]interface{}, error) {
+func FindCollectionByUserMetamaskID(userMetamaskId string, page, pageSize int64) (map[string]interface{}, error) {
 	var (
 		collections = make([]bson.M, 0)
 		result      = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
-	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"userMetamaskId": usermetamaskid, "isDelete": 0})
+	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"userMetamaskId": userMetamaskId, "creatorMetamaskId": userMetamaskId, "isDelete": 0})
 	if err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -93,7 +94,7 @@ func FindCollectionByUserMetamaskID(usermetamaskid string, page, pageSize int64)
 	}
 
 	pipe := mongo.Pipeline{
-		{{"$match", bson.M{"userMetamaskId": usermetamaskid, "isDelete": 0}}},
+		{{"$match", bson.M{"userMetamaskId": userMetamaskId, "creatorMetamaskId": userMetamaskId, "isDelete": 0}}},
 		{{"$skip", (page - 1) * pageSize}},
 		{{"$limit", pageSize}},
 		{{"$lookup", bson.M{
@@ -180,10 +181,10 @@ func FindCollectionByCollectionID(collectionId string) (map[string]interface{}, 
 }
 
 // FindUserMediaByUserId find user media by userId
-func FindUserMediaByUserId(userId string) (interface{}, error) {
+func FindUserMediaByUserId(userMetamaskId string) (interface{}, error) {
 	var user User
 	db := database.GetMongoClient()
-	if err := db.Collection("users").FindOne(context.TODO(), bson.M{"userMetamaskId": userId}).Decode(&user); err != nil && err != mongo.ErrNoDocuments {
+	if err := db.Collection("users").FindOne(context.TODO(), bson.M{"userMetamaskId": userMetamaskId}).Decode(&user); err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}

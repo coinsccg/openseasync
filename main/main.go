@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	cors "github.com/itsjamie/gin-cors"
 	"openseasync/common/constants"
 	"openseasync/config"
 	"openseasync/database"
 	"openseasync/logs"
 	"openseasync/routers/common"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	cors "github.com/itsjamie/gin-cors"
 )
 
 func main() {
