@@ -6,11 +6,9 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"math"
-
-	//"github.com/dgrijalva/jwt-go"
 	"io"
 	"io/ioutil"
+	"math"
 	"math/big"
 	"net/http"
 	constants2 "openseasync/common/constants"
@@ -112,19 +110,6 @@ func GetOffsetByPagenumber(pageNumber, pageSize string) (int64, error) {
 	return offset, nil
 }
 
-//func DecodeJwtToken(tokenStr string) (jwt.MapClaims, error) {
-//	token, err := jwt.Parse(tokenStr, nil)
-//	if token == nil {
-//		return nil, err
-//	}
-//	claims, _ := token.Claims.(jwt.MapClaims)
-//
-//	for key, element := range claims {
-//		fmt.Println("Key:", key, "=>", "Element:", element)
-//	}
-//
-//	return claims, nil
-//}
 func HttpUploadFileByStream(uri, filefullpath string) (string, error) {
 	fileReader, err := os.Open(filefullpath)
 	if err != nil {
@@ -227,6 +212,7 @@ func RequestOpenSeaAssets(owner string, offset, limit int64) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 	content, _ := ioutil.ReadAll(resp.Body)
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, errors.New(string(content))
 	}
@@ -254,6 +240,10 @@ func RequestOpenSeaCollections(owner string, offset, limit int64) ([]byte, error
 	}
 	defer resp.Body.Close()
 	content, err := ioutil.ReadAll(resp.Body)
+		fmt.Println("+++++++++++++++++++++ Collections Begin ++++++++++++++++++++++++++")
+
+	fmt.Println(string(content))
+	fmt.Println("+++++++++++++++++++++ Collections End ++++++++++++++++++++++++++")
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -322,6 +312,7 @@ func RequestOpenSeaEvent(contractAddress, tokenId string) ([]byte, error) {
 		logs.GetLogger().Error(err)
 		return nil, err
 	}
+	
 	if resp.StatusCode != http.StatusOK {
 		err = errors.New(string(content))
 		return nil, err
@@ -334,7 +325,7 @@ func ParseTime(timeStr string) int64 {
 	str = strings.ReplaceAll(str, "T", " ")
 	i, _ := time.Parse("2006-01-02 15:04:05", str)
 	i = i.Add(-time.Hour * 8)
-	tm := i.Unix()
+	tm := i.UnixMilli()
 	return tm
 }
 
@@ -342,8 +333,11 @@ func EthToWei(value float64) *big.Int {
 	val := big.NewFloat(value)
 	base := new(big.Float)
 	base.SetInt(big.NewInt(int64(math.Pow10(18))))
+
 	val.Mul(val, base)
 	result := new(big.Int)
 	val.Int(result)
+	
+
 	return result
 }

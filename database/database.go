@@ -66,7 +66,9 @@ func SaveOneWithTransaction(data interface{}) error {
 func InitMongo() *mongo.Client {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	oc := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%s/?maxPoolSize=20&w=majority", config.GetConfig().Database.DbUsername, config.GetConfig().Database.DbPwd, config.GetConfig().Database.DbHost, config.GetConfig().Database.DbPort))
+	oc := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%s/?%s",
+	 config.GetConfig().Database.DbUsername, config.GetConfig().Database.DbPwd, config.GetConfig().Database.DbHost, config.GetConfig().Database.DbPort, config.GetConfig().Database.DbArgs))
+	
 	oc.SetMaxPoolSize(100)
 	client, err := mongo.Connect(ctx, oc)
 	if err != nil {

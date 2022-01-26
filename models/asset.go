@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
 	"math/big"
 	"openseasync/common/utils"
@@ -65,7 +66,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 			traits             []Trait
 			assetTopOwnerships []AssetsTopOwnership
 		)
-
+		
 		for _, v1 := range v.Traits {
 			var trait = Trait{
 				UserMetamaskID:  user,
@@ -82,9 +83,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 			traits = append(traits, trait)
 		}
 		asset.Traits = traits
-		if len(asset.Traits) < 1 {
-			asset.OwnerMetamaskId = v.Creator.Address
-		}
+	
 		if v.SellOrders != nil {
 			sellOrders := v.SellOrders[0]
 			asset.Price = strings.Split(sellOrders.CurrentPrice, ".")[0]
@@ -97,8 +96,8 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 				asset.Status = "onAuction"
 			}
 
-			asset.SellOrders.CreateDate = sellOrders.CreatedDate
-			asset.SellOrders.ClosingDate = sellOrders.ClosingDate
+			asset.SellOrders.CreateDate = utils.ParseTime(sellOrders.CreatedDate)
+			asset.SellOrders.ClosingDate = utils.ParseTime(sellOrders.ClosingDate)
 			asset.SellOrders.CurrentPrice = sellOrders.CurrentPrice
 			asset.SellOrders.PayTokenContract.Symbol = sellOrders.PaymentTokenContract.Symbol
 			asset.SellOrders.PayTokenContract.ImageURL = sellOrders.PaymentTokenContract.ImageURL
@@ -142,7 +141,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 			assetTopOwnerships = append(assetTopOwnerships, assetsTopOwnership)
 		}
 		asset.AssetsTopOwnerships = assetTopOwnerships
-
+		asset.OwnerMetamaskId = assetTopOwnerships[len(assetTopOwnerships)-1].Owner
 		// insert assets
 		count, err := db.Collection("assets").CountDocuments(
 			context.TODO(),
@@ -192,17 +191,6 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 			TwitterLink:      v.Collection.TwitterUsername,
 			InstagramLink:    "https://www.instagram.com/" + v.Collection.InstagramUsername,
 		}
-		// 	fmt.Println("====================== userModel Start ==========================")
-
-		// fmt.Println((userModel))
-		// fmt.Println("====================== userModel End ==========================")
-		// 	if userModel.InstagramLink != ""{
-		// 		userModel.InstagramLink = "https://www.instagram.com/" + userModel.InstagramLink
-		// 	}
-		// 	fmt.Println("====================== userModel Start::after ==========================")
-
-		// fmt.Println((userModel))
-		// fmt.Println("====================== userModel End::after ==========================")
 		if v.Owner.Address == ZeroAddress && user == v.Creator.Address {
 			userModel.Username = v.Creator.User.Username
 			userModel.AvatarUrl = v.Creator.ProfileImgURL
@@ -283,7 +271,7 @@ func FindAssetSearchByOwner(collectionId string, param Params) (map[string]inter
 	}
 
 	cond := mongo.Pipeline{
-		{{"$match", bson.M{"collectionId": collectionId, "status": status, "isDelete": 0}}},
+		{{"$match", bson.M{"collectionId": collectionId, "status": status, "collectibleName": primitive.Regex{Pattern: param.Field, Options: "i"},"isDelete": 0}}},
 		{{
 			"$addFields", bson.M{"price": bson.M{"$cond": bson.M{
 				"if":   bson.M{"$ne": bson.A{"$price", ""}},
@@ -451,7 +439,7 @@ func FindAssetOtherByCollection(collectibleId int64) (map[string]interface{}, er
 		return nil, err
 	}
 	collectionId := asset.CollectionID
-	cursor, err := db.Collection("assets").Find(context.TODO(), bson.M{"collectionId": collectionId, "id": bson.M{"$ne": collectibleId}}, opts)
+	cursor, err := db.Collection("assets").Find(context.TODO(), bson.M{"collectionId": collectionId, "id": bson.M{"$ne":collectibleId}}, opts)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -473,7 +461,7 @@ func FindOrdersHighestPriceByCollectibleId(collectibleId int64) (interface{}, er
 	)
 	db := database.GetMongoClient()
 	cond := mongo.Pipeline{
-		{{"$match", bson.M{"collectibleId": collectibleId, "tradeType": "onAuction", "isDelete": 0}}},
+		{{"$match", bson.M{"collectibleId": collectibleId, "tradeType": "onSale", "isDelete": 0}}},
 		{{
 			"$addFields", bson.M{"highestPrice": bson.M{"$cond": bson.M{
 				"if":   bson.M{"$ne": bson.A{"$price", ""}},
@@ -663,9 +651,9 @@ func insertOrders(db *mongo.Database, collectibleId int, autoAsset AutoAsset, uu
 			UUID:              uuid,
 			Id:                v.OrderHash,
 			CollectibleId:     collectibleId,
-			StartTime:         v.CreatedDate,
-			EndTime:           v.ClosingDate,
-			BidTime:           v.CreatedDate,
+			StartTime:         utils.ParseTime(v.CreatedDate),
+			EndTime:           utils.ParseTime(v.ClosingDate),
+			BidTime:           utils.ParseTime(v.CreatedDate),
 			AuctionMetamaskId: v.Maker.Address,
 			AuctionUserName:   v.Maker.User.Username,
 			CurrentBounty:     v.CurrentBounty,
@@ -735,8 +723,8 @@ func insertUsers(db *mongo.Database, userAddress string, user User) error {
 		if _, err = db.Collection("users").UpdateOne(
 			context.TODO(),
 			bson.M{"userMetamaskId": userAddress},
-			bson.M{"$set": bson.M{"userName": user.Username, "avatarUrl": user.AvatarUrl, "instagramLink": user.InstagramLink, "personalPageLink": user.PersonalPageLink,
-				"discordLink": user.DiscordLink, "telegramLink": user.TelegramLink, "twitterLink": user.TwitterLink}}); err != nil {
+			bson.M{"$set": bson.M{"userName": user.Username, "avatarUrl": user.AvatarUrl, "instagramLink":user.InstagramLink, "personalPageLink":user.PersonalPageLink, 
+			"discordLink":user.DiscordLink, "telegramLink":user.TelegramLink, "twitterLink":user.TwitterLink}}); err != nil {
 			logs.GetLogger().Error(err)
 			return err
 		}

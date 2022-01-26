@@ -24,7 +24,7 @@ func getSwanMinerHostInfo() *common.HostInfo {
 // openSeaOwnerAssetsSync get all assets by owner
 func openSeaOwnerAssetsSync(user string) error {
 	var n int64 = 1
-	refreshTime := time.Now().Unix()
+	refreshTime := time.Now().UnixMilli()
 	for {
 		time.Sleep(time.Second * 2)
 		// If the number of requests is too many, a 429 error code will be thrown
@@ -58,7 +58,7 @@ func openSeaOwnerAssetsSync(user string) error {
 // openSeaOwnerCollectionsSync get all collections by owner
 func openSeaOwnerCollectionsSync(user string) error {
 	var n int64 = 1
-	refreshTime := time.Now().Unix()
+	refreshTime := time.Now().UnixMilli()
 	for {
 
 		content, err := utils.RequestOpenSeaCollections(user, 300*(n-1), 300*n)

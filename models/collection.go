@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"errors"
+	"openseasync/common/utils"
 	"openseasync/database"
 	"openseasync/logs"
 
@@ -26,7 +27,7 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string, refreshT
 			UserCoverUrl:       v.BannerImageURL,
 			CoverImageUrl:      v.ImageURL,
 			CoverLargeImageUrl: v.LargeImageURL,
-			CreateDate:         v.CreatedDate,
+			CreateDate:         utils.ParseTime(v.CreatedDate),
 			RefreshTime:        refreshTime,
 			OwnersCount:        v.Stats.NumOwners,
 			ItemsCount:         int(v.Stats.TotalSupply),
@@ -100,7 +101,7 @@ func FindCollectionByUserMetamaskID(userMetamaskId string, page, pageSize int64)
 		{{"$lookup", bson.M{
 			"from":     "users",
 			"let":      bson.M{"userMetamaskId": "$userMetamaskId"},
-			"pipeline": bson.A{bson.M{"$match": bson.M{"$expr": bson.M{"$eq": bson.A{"$userMetamaskId", "$$userMetamaskId"}}}}},
+			"pipeline": bson.A{bson.M{"$match": bson.M{"$expr": bson.M{"$eq": bson.A{"$creatorMetamaskId", "$$userMetamaskId"}}}}},
 			"as":       "user_item",
 		}}},
 		{{

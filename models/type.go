@@ -71,7 +71,7 @@ type Collection struct {
 	CoverImageUrl      string  `json:"coverImageUrl " bson:"coverImageUrl "`         // 封面图片
 	CoverLargeImageUrl string  `json:"coverLargeImageURL" bson:"coverLargeImageURL"` // 头像大图
 	IsDelete           int8    `json:"isDelete" bson:"isDelete"`                     // 是否删除 1删除 0未删除 默认为0
-	CreateDate         string  `json:"createDate" bson:"createDate"`                 // 集合创建时间
+	CreateDate         int64  `json:"createDate" bson:"createDate"`                 // 集合创建时间
 	RefreshTime        int64   `json:"refreshTime" bson:"refreshTime"`               // 刷新时间
 	ItemsCount         int     `json:"itemsCount" bson:"itemsCount"`                 // 集合中NFT总数
 	TotalVolume        float64 `json:"totalVolume" bson:"totalVolume"`               // 交易量
@@ -93,8 +93,8 @@ type Contract struct {
 }
 
 type SellOrder struct {
-	CreateDate   string `json:"createDate" bson:"createDate"`     // 创建时间
-	ClosingDate  string `json:"closingDate" bson:"closingDate"`   // 结束时间
+	CreateDate   int64 `json:"createDate" bson:"createDate"`     // 创建时间
+	ClosingDate  int64 `json:"closingDate" bson:"closingDate"`   // 结束时间
 	CurrentPrice string `json:"currentPrice" bson:"currentPrice"` // 当前价格
 
 	PayTokenContract PayTokenContract `json:"payTokenContract" bson:"payTokenContract"` // 支付方式
@@ -104,9 +104,9 @@ type Orders struct {
 	UUID              string           `json:"uuid" bson:"uuid"`
 	Id                string           `json:"id" bson:"id"`                       // 订单hash
 	CollectibleId     int              `json:"collectibleId" bson:"collectibleId"` // NFT id
-	StartTime         string           `json:"startTime" bson:"startTime"`         // 创建时间
-	BidTime           string           `json:"bidTime" bson:"bidTime"`             // 投标时间
-	EndTime           string           `json:"endTime" bson:"endTime"`             // 结束时间
+	StartTime         int64           `json:"startTime" bson:"startTime"`         // 创建时间
+	BidTime           int64           `json:"bidTime" bson:"bidTime"`             // 投标时间
+	EndTime           int64           `json:"endTime" bson:"endTime"`             // 结束时间
 	Price             string           `json:"price" bson:"price"`                 // 当前价格
 	BasePrice         string           `json:"basePrice" bson:"basePrice"`         // 基础价格
 	CurrentBounty     string           `json:"currentBounty" bson:"currentBounty"`
@@ -126,7 +126,6 @@ type PayTokenContract struct {
 }
 
 type Trait struct {
-	//ID              int64  `json:"id" bson:"id"`                     // 主键
 	UserMetamaskID  string      `json:"userMetamaskId" bson:"userMetamaskId"` // 用户地址
 	ContractAddress string      `json:"_" bson:"contractAddress"`             // 合约地址
 	TokenId         string      `json:"_" bson:"token_id"`                    // token id
@@ -141,7 +140,6 @@ type Trait struct {
 }
 
 type AssetsTopOwnership struct {
-	//ID              int64  `json:"id" bson:"id"`                           // 主键
 	UserMetamaskID  string `json:"userMetamaskId" bson:"userMetamaskId"` // 用户地址
 	ContractAddress string `json:"_" bson:"contractAddress"`             // 合约地址
 	TokenId         string `json:"_" bson:"token_id"`                    // token id
