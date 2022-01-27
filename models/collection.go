@@ -99,13 +99,13 @@ func FindCollectionByUserMetamaskID(userMetamaskId string, page, pageSize int64)
 		{{"$skip", (page - 1) * pageSize}},
 		{{"$limit", pageSize}},
 		{{"$lookup", bson.M{
-			"from":     "users",
-			"let":      bson.M{"userMetamaskId": "$userMetamaskId"},
-			"pipeline": bson.A{bson.M{"$match": bson.M{"$expr": bson.M{"$eq": bson.A{"$creatorMetamaskId", "$$userMetamaskId"}}}}},
-			"as":       "user_item",
+			"from":         "users",
+			"localField":   "creatorMetamaskId",
+			"foreignField": "userMetamaskId",
+			"as":           "item",
 		}}},
 		{{
-			"$addFields", bson.M{"user_item": bson.M{"$arrayElemAt": bson.A{"$user_item", 0}}},
+			"$addFields", bson.M{"user_item": bson.M{"$arrayElemAt": bson.A{"$item", 0}}},
 		}},
 		{{
 			"$addFields", bson.M{"userId": "$user_item.id", "userName": "$user_item.userName", "avatarUrl": "$user_item.avatarUrl"},
@@ -144,13 +144,13 @@ func FindCollectionByCollectionID(collectionId string) (map[string]interface{}, 
 	pipe := mongo.Pipeline{
 		{{"$match", bson.M{"id": collectionId, "isDelete": 0}}},
 		{{"$lookup", bson.M{
-			"from":     "users",
-			"let":      bson.M{"userMetamaskId": "$userMetamaskId"},
-			"pipeline": bson.A{bson.M{"$match": bson.M{"$expr": bson.M{"$eq": bson.A{"$userMetamaskId", "$$userMetamaskId"}}}}},
-			"as":       "user_item",
+			"from":         "users",
+			"localField":   "creatorMetamaskId",
+			"foreignField": "userMetamaskId",
+			"as":           "item",
 		}}},
 		{{
-			"$addFields", bson.M{"user_item": bson.M{"$arrayElemAt": bson.A{"$user_item", 0}}},
+			"$addFields", bson.M{"user_item": bson.M{"$arrayElemAt": bson.A{"$item", 0}}},
 		}},
 		{{
 			"$addFields", bson.M{"userId": "$user_item.id", "userName": "$user_item.userName", "avatarUrl": "$user_item.avatarUrl"},

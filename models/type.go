@@ -15,24 +15,26 @@ type User struct {
 }
 
 type Asset struct {
-	Id                  int    `json:"id" bson:"id"`                           // NFT ID
-	UserMetamaskID      string `json:"userMetamaskId" bson:"userMetamaskId"`   // 用户地址
-	CollectibleName     string `json:"collectibleName" bson:"collectibleName"` // NFT作品标题
-	CoverImageUrl       string `json:"coverImageUrl" bson:"coverImageUrl"`     // 封面图片
-	CoverPreviewUrl     string `json:"coverPreviewUrl" bson:"coverPreviewUrl"` // NFT作品原图
-	ThumbnailUrl        string `json:"thumbnailUrl" bson:"thumbnailUrl"`       // NFT作品缩略图
-	FileUrl             string `json:"fileUrl" bson:"fileUrl"`
-	Description         string `json:"description" bson:"description"`                 // NFT作品描述
-	ContractAddress     string `json:"contractAddress" bson:"contractAddress"`         // 合约地址
-	CollectibleTokenId  string `json:"collectibleTokenId" bson:"collectibleTokenId"`   // NFT token id
-	NumSales            int    `json:"numSales" bson:"numSales"`                       // NFT售卖次数
-	OwnerMetamaskId     string `json:"ownerMetamaskId" bson:"ownerMetamaskId"`         // NFT拥有者地址
-	OwnerName           string `json:"ownerName" bson:"ownerName"`                     // NFT拥有者名字
-	OwnerImgURL         string `json:"ownerImgUrl" bson:"ownerImgUrl"`                 // 拥有者头像
-	CreatorMetamaskId   string `json:"creatorMetamaskId" bson:"creatorMetamaskId"`     // NFT创造者地址
-	CreatorPersonalSite string `json:"creatorPersonalSite" bson:"creatorPersonalSite"` // NFT创造者个人网站
-	CreatorName         string `json:"creatorName" bson:"creatorName"`                 // NFT创造者名字
-	CreatorImgUrl       string `json:"creatorImgUrl" bson:"creatorImgUrl"`             // 创造者头像
+	Id                   int    `json:"id" bson:"id"`                                     // NFT ID
+	UserMetamaskID       string `json:"userMetamaskId" bson:"userMetamaskId"`             // 用户地址
+	CollectibleName      string `json:"collectibleName" bson:"collectibleName"`           // NFT作品标题
+	CoverImageUrl        string `json:"coverImageUrl" bson:"coverImageUrl"`               // 封面图片
+	CoverPreviewUrl      string `json:"coverPreviewUrl" bson:"coverPreviewUrl"`           // NFT作品原图
+	ThumbnailUrl         string `json:"thumbnailUrl" bson:"thumbnailUrl"`                 // NFT作品缩略图
+	AnimationUrl         string `json:"animationUrl" bson:"animationUrl"`                 // 视频地址
+	AnimationOriginalUrl string `json:"animationOriginalUrl" bson:"animationOriginalUrl"` // 视频源地址
+	FileUrl              string `json:"fileUrl" bson:"fileUrl"`
+	Description          string `json:"description" bson:"description"`                 // NFT作品描述
+	ContractAddress      string `json:"contractAddress" bson:"contractAddress"`         // 合约地址
+	CollectibleTokenId   string `json:"collectibleTokenId" bson:"collectibleTokenId"`   // NFT token id
+	NumSales             int    `json:"numSales" bson:"numSales"`                       // NFT售卖次数
+	OwnerMetamaskId      string `json:"ownerMetamaskId" bson:"ownerMetamaskId"`         // NFT拥有者地址
+	OwnerName            string `json:"ownerName" bson:"ownerName"`                     // NFT拥有者名字
+	OwnerImgURL          string `json:"ownerImgUrl" bson:"ownerImgUrl"`                 // 拥有者头像
+	CreatorMetamaskId    string `json:"creatorMetamaskId" bson:"creatorMetamaskId"`     // NFT创造者地址
+	CreatorPersonalSite  string `json:"creatorPersonalSite" bson:"creatorPersonalSite"` // NFT创造者个人网站
+	CreatorName          string `json:"creatorName" bson:"creatorName"`                 // NFT创造者名字
+	CreatorImgUrl        string `json:"creatorImgUrl" bson:"creatorImgUrl"`             // 创造者头像
 
 	CollectionID   string `json:"collectionId" bson:"collectionId"`     // 集合 id
 	CollectionName string `json:"collectionName" bson:"collectionName"` // 集合 name
@@ -71,7 +73,7 @@ type Collection struct {
 	CoverImageUrl      string  `json:"coverImageUrl " bson:"coverImageUrl "`         // 封面图片
 	CoverLargeImageUrl string  `json:"coverLargeImageURL" bson:"coverLargeImageURL"` // 头像大图
 	IsDelete           int8    `json:"isDelete" bson:"isDelete"`                     // 是否删除 1删除 0未删除 默认为0
-	CreateDate         int64  `json:"createDate" bson:"createDate"`                 // 集合创建时间
+	CreateDate         int64   `json:"createDate" bson:"createDate"`                 // 集合创建时间
 	RefreshTime        int64   `json:"refreshTime" bson:"refreshTime"`               // 刷新时间
 	ItemsCount         int     `json:"itemsCount" bson:"itemsCount"`                 // 集合中NFT总数
 	TotalVolume        float64 `json:"totalVolume" bson:"totalVolume"`               // 交易量
@@ -93,8 +95,8 @@ type Contract struct {
 }
 
 type SellOrder struct {
-	CreateDate   int64 `json:"createDate" bson:"createDate"`     // 创建时间
-	ClosingDate  int64 `json:"closingDate" bson:"closingDate"`   // 结束时间
+	CreateDate   int64  `json:"createDate" bson:"createDate"`     // 创建时间
+	ClosingDate  int64  `json:"closingDate" bson:"closingDate"`   // 结束时间
 	CurrentPrice string `json:"currentPrice" bson:"currentPrice"` // 当前价格
 
 	PayTokenContract PayTokenContract `json:"payTokenContract" bson:"payTokenContract"` // 支付方式
@@ -104,9 +106,9 @@ type Orders struct {
 	UUID              string           `json:"uuid" bson:"uuid"`
 	Id                string           `json:"id" bson:"id"`                       // 订单hash
 	CollectibleId     int              `json:"collectibleId" bson:"collectibleId"` // NFT id
-	StartTime         int64           `json:"startTime" bson:"startTime"`         // 创建时间
-	BidTime           int64           `json:"bidTime" bson:"bidTime"`             // 投标时间
-	EndTime           int64           `json:"endTime" bson:"endTime"`             // 结束时间
+	StartTime         int64            `json:"startTime" bson:"startTime"`         // 创建时间
+	BidTime           int64            `json:"bidTime" bson:"bidTime"`             // 投标时间
+	EndTime           int64            `json:"endTime" bson:"endTime"`             // 结束时间
 	Price             string           `json:"price" bson:"price"`                 // 当前价格
 	BasePrice         string           `json:"basePrice" bson:"basePrice"`         // 基础价格
 	CurrentBounty     string           `json:"currentBounty" bson:"currentBounty"`

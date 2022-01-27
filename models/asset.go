@@ -29,30 +29,32 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 		uuidOrder, _ := uuid2.NewUUID()
 		var (
 			asset = Asset{
-				Id:                 v.ID,
-				UserMetamaskID:     user,
-				CollectibleName:    v.Name,
-				CoverImageUrl:      v.ImageURL,
-				CoverPreviewUrl:    v.ImagePreviewURL,
-				ThumbnailUrl:       v.ImageURL,
-				FileUrl:            v.TokenMetadata,
-				Description:        v.Description,
-				ContractAddress:    v.AssetContract.Address,
-				CollectibleTokenId: v.TokenID,
-				NumSales:           v.NumSales,
-				OwnerMetamaskId:    v.Owner.Address,
-				OwnerName:          v.Owner.User.Username,
-				OwnerImgURL:        v.Owner.ProfileImgURL,
-				CreatorMetamaskId:  v.Creator.Address,
-				CreatorName:        v.Creator.User.Username,
-				CreatorImgUrl:      v.Creator.ProfileImgURL,
-				CollectionID:       v.Collection.Slug,
-				CollectionName:     v.Collection.Name,
-				RefreshTime:        refreshTime,
-				Status:             "onHold",
-				NumOfCopies:        1,
-				TotalCopies:        1,
-				RecordId:           uuidOrder.String(),
+				Id:                   v.ID,
+				UserMetamaskID:       user,
+				CollectibleName:      v.Name,
+				CoverImageUrl:        v.ImageURL,
+				CoverPreviewUrl:      v.ImagePreviewURL,
+				ThumbnailUrl:         v.ImageURL,
+				AnimationUrl:         v.AnimationURL,
+				AnimationOriginalUrl: v.AnimationOriginalURL,
+				FileUrl:              v.TokenMetadata,
+				Description:          v.Description,
+				ContractAddress:      v.AssetContract.Address,
+				CollectibleTokenId:   v.TokenID,
+				NumSales:             v.NumSales,
+				OwnerMetamaskId:      v.Owner.Address,
+				OwnerName:            v.Owner.User.Username,
+				OwnerImgURL:          v.Owner.ProfileImgURL,
+				CreatorMetamaskId:    v.Creator.Address,
+				CreatorName:          v.Creator.User.Username,
+				CreatorImgUrl:        v.Creator.ProfileImgURL,
+				CollectionID:         v.Collection.Slug,
+				CollectionName:       v.Collection.Name,
+				RefreshTime:          refreshTime,
+				Status:               "onHold",
+				NumOfCopies:          1,
+				TotalCopies:          1,
+				RecordId:             uuidOrder.String(),
 			}
 			contract = Contract{
 				Address:      v.AssetContract.Address,
@@ -66,7 +68,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 			traits             []Trait
 			assetTopOwnerships []AssetsTopOwnership
 		)
-		
+
 		for _, v1 := range v.Traits {
 			var trait = Trait{
 				UserMetamaskID:  user,
@@ -83,7 +85,7 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 			traits = append(traits, trait)
 		}
 		asset.Traits = traits
-	
+
 		if v.SellOrders != nil {
 			sellOrders := v.SellOrders[0]
 			asset.Price = strings.Split(sellOrders.CurrentPrice, ".")[0]
@@ -260,7 +262,7 @@ func FindAssetSearchByOwner(collectionId string, param Params) (map[string]inter
 	case 5:
 		sort = bson.M{"viewCounts": 1}
 	case 6:
-		sort = bson.M{"endTime": -1}
+		sort = bson.M{"endTime": 1}
 	}
 	if param.Status == 0 {
 		status = "onSale"
@@ -271,7 +273,7 @@ func FindAssetSearchByOwner(collectionId string, param Params) (map[string]inter
 	}
 
 	cond := mongo.Pipeline{
-		{{"$match", bson.M{"collectionId": collectionId, "status": status, "collectibleName": primitive.Regex{Pattern: param.Field, Options: "i"},"isDelete": 0}}},
+		{{"$match", bson.M{"collectionId": collectionId, "status": status, "collectibleName": primitive.Regex{Pattern: param.Field, Options: "i"}, "isDelete": 0}}},
 		{{
 			"$addFields", bson.M{"price": bson.M{"$cond": bson.M{
 				"if":   bson.M{"$ne": bson.A{"$price", ""}},
@@ -300,7 +302,7 @@ func FindAssetSearchByOwner(collectionId string, param Params) (map[string]inter
 			bson.M{
 				"_id": 0, "id": 1, "coverImageUrl": 1, "collectibleName": 1, "creatorId ": 1, "creatorMetamaskId": 1,
 				"creatorName": 1, "likesCount": 1, "viewsCount": 1, "numOfCopies": 1, "totalCopies": 1, "status": 1,
-				"ownerUserId": 1, "ownerMetamaskId": 1, "createDate": 1, "endTime": 1,
+				"ownerUserId": 1, "ownerMetamaskId": 1, "createDate": 1, "endTime": 1, "animationUrl": 1, "animationOriginalUrl": 1,
 				"price": bson.M{"$cond": bson.M{
 					"if":   bson.M{"$ne": bson.A{"$price", 0}},
 					"then": "$price",
@@ -351,6 +353,8 @@ func FindAssetByGeneralInfoCollectibleId(collectibleId int64) (map[string]interf
 			{"price", 1},
 			{"status", 1},
 			{"thumbnailUrl", 1},
+			{"animationUrl", 1},
+			{"animationOriginalUrl", 1},
 			{"collectibleTokenId", 1},
 			{"recordId", 1},
 			{"startTime", 1},
@@ -439,7 +443,7 @@ func FindAssetOtherByCollection(collectibleId int64) (map[string]interface{}, er
 		return nil, err
 	}
 	collectionId := asset.CollectionID
-	cursor, err := db.Collection("assets").Find(context.TODO(), bson.M{"collectionId": collectionId, "id": bson.M{"$ne":collectibleId}}, opts)
+	cursor, err := db.Collection("assets").Find(context.TODO(), bson.M{"collectionId": collectionId, "id": bson.M{"$ne": collectibleId}}, opts)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -461,7 +465,7 @@ func FindOrdersHighestPriceByCollectibleId(collectibleId int64) (interface{}, er
 	)
 	db := database.GetMongoClient()
 	cond := mongo.Pipeline{
-		{{"$match", bson.M{"collectibleId": collectibleId, "tradeType": "onSale", "isDelete": 0}}},
+		{{"$match", bson.M{"collectibleId": collectibleId, "tradeType": "onAuction", "isDelete": 0}}},
 		{{
 			"$addFields", bson.M{"highestPrice": bson.M{"$cond": bson.M{
 				"if":   bson.M{"$ne": bson.A{"$price", ""}},
@@ -647,6 +651,9 @@ func insertTransaction(db *mongo.Database, contractAddress, tokenId string) (int
 // insert orders
 func insertOrders(db *mongo.Database, collectibleId int, autoAsset AutoAsset, uuid string) error {
 	for _, v := range autoAsset.Orders {
+		if v.Taker.Address == ZeroAddress {
+			continue
+		}
 		var orders = Orders{
 			UUID:              uuid,
 			Id:                v.OrderHash,
@@ -654,8 +661,8 @@ func insertOrders(db *mongo.Database, collectibleId int, autoAsset AutoAsset, uu
 			StartTime:         utils.ParseTime(v.CreatedDate),
 			EndTime:           utils.ParseTime(v.ClosingDate),
 			BidTime:           utils.ParseTime(v.CreatedDate),
-			AuctionMetamaskId: v.Maker.Address,
-			AuctionUserName:   v.Maker.User.Username,
+			AuctionMetamaskId: v.Taker.Address,
+			AuctionUserName:   v.Taker.User.Username,
 			CurrentBounty:     v.CurrentBounty,
 			Price:             v.CurrentPrice,
 			BasePrice:         v.BasePrice,
@@ -723,8 +730,8 @@ func insertUsers(db *mongo.Database, userAddress string, user User) error {
 		if _, err = db.Collection("users").UpdateOne(
 			context.TODO(),
 			bson.M{"userMetamaskId": userAddress},
-			bson.M{"$set": bson.M{"userName": user.Username, "avatarUrl": user.AvatarUrl, "instagramLink":user.InstagramLink, "personalPageLink":user.PersonalPageLink, 
-			"discordLink":user.DiscordLink, "telegramLink":user.TelegramLink, "twitterLink":user.TwitterLink}}); err != nil {
+			bson.M{"$set": bson.M{"userName": user.Username, "avatarUrl": user.AvatarUrl, "instagramLink": user.InstagramLink, "personalPageLink": user.PersonalPageLink,
+				"discordLink": user.DiscordLink, "telegramLink": user.TelegramLink, "twitterLink": user.TwitterLink}}); err != nil {
 			logs.GetLogger().Error(err)
 			return err
 		}
