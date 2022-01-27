@@ -37,7 +37,6 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 				ThumbnailUrl:         v.ImageURL,
 				AnimationUrl:         v.AnimationURL,
 				AnimationOriginalUrl: v.AnimationOriginalURL,
-				FileUrl:              v.TokenMetadata,
 				Description:          v.Description,
 				ContractAddress:      v.AssetContract.Address,
 				CollectibleTokenId:   v.TokenID,
@@ -85,6 +84,11 @@ func InsertOpenSeaAsset(assets *OwnerAsset, user string, refreshTime int64) erro
 			traits = append(traits, trait)
 		}
 		asset.Traits = traits
+		if v.AnimationOriginalURL != "" {
+			asset.FileUrl = v.AnimationOriginalURL
+		} else {
+			asset.FileUrl = v.ImageOriginalURL
+		}
 
 		if v.SellOrders != nil {
 			sellOrders := v.SellOrders[0]
