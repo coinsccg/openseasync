@@ -33,6 +33,9 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string, refreshT
 			ItemsCount:         int(v.Stats.TotalSupply),
 			TotalVolume:        v.Stats.TotalVolume,
 		}
+		if collection.CreatorMetamaskId == "" {
+			collection.CreatorMetamaskId = user
+		}
 		count, err := db.Collection("collections").
 			CountDocuments(context.TODO(), bson.M{"userMetamaskId": user, "id": v.Slug, "isDelete": 0})
 		if err != nil {
