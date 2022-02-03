@@ -83,11 +83,11 @@ func InsertOpenSeaCollection(collections *OwnerCollection, user string, refreshT
 // FindCollectionByUserMetamaskID find collections by usermetamaskid
 func FindCollectionByUserMetamaskID(userMetamaskId string, page, pageSize int64) (map[string]interface{}, error) {
 	var (
-		collections = make([]bson.M, 0)
+		collections = make([]ResponseColl, 0)
 		result      = make(map[string]interface{})
 	)
 	db := database.GetMongoClient()
-	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"userMetamaskId": userMetamaskId, "creatorMetamaskId": userMetamaskId, "isDelete": 0})
+	total, err := db.Collection("collections").CountDocuments(context.TODO(), bson.M{"userMetamaskId": userMetamaskId, "isDelete": 0})
 	if err != nil && err != mongo.ErrNoDocuments {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -98,7 +98,7 @@ func FindCollectionByUserMetamaskID(userMetamaskId string, page, pageSize int64)
 	}
 
 	pipe := mongo.Pipeline{
-		{{"$match", bson.M{"userMetamaskId": userMetamaskId, "creatorMetamaskId": userMetamaskId, "isDelete": 0}}},
+		{{"$match", bson.M{"userMetamaskId": userMetamaskId, "isDelete": 0}}},
 		{{"$skip", (page - 1) * pageSize}},
 		{{"$limit", pageSize}},
 		{{"$lookup", bson.M{
@@ -120,6 +120,7 @@ func FindCollectionByUserMetamaskID(userMetamaskId string, page, pageSize int64)
 			},
 		}},
 	}
+
 	cursor, err := db.Collection("collections").Aggregate(context.TODO(), pipe)
 	if err != nil {
 		logs.GetLogger().Error(err)

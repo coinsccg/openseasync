@@ -820,3 +820,14 @@ type ResponseAsset struct {
 	StartTime           string  `json:"startTime"`
 	EndTime             string  `json:"endTime"`
 }
+
+type ResponseColl struct {
+	Id             string `json:"id" bson:"id"`
+	UserId         string `json:"userId" bson:"userId"`
+	UserMetamaskId string `json:"userMetamaskId" bson:"userMetamaskId"`
+	CoverImageUrl  string `json:"coverImageUrl" bson:"coverImageUrl"`
+	AvatarUrl      string `json:"avatarUrl" bson:"avatarUrl"`
+	UserName       string `json:"userName" bson:"userName"`
+	CollectionName string `json:"collectionName" bson:"collectionName"`
+	Description    string `json:"description" bson:"description"`
+}
